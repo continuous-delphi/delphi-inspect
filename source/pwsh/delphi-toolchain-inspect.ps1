@@ -335,18 +335,25 @@ function Get-DccReadiness {
     verDefine     = $Entry.verDefine
     productName   = $Entry.productName
     readiness     = 'notFound'
-    registryFound = $false
+    registryFound = $null
     rootDirExists = $null
     compilerFound = $null
     cfgFound      = $null
   }
 
+  if ('DCC' -notin $Entry.supportedBuildSystems -or $Platform -notin $Entry.supportedPlatforms) {
+    $result.readiness = 'notApplicable'
+    return $result
+  }
+
   if ([string]::IsNullOrWhiteSpace($Entry.regKeyRelativePath)) {
+    $result.registryFound = $false
     return $result
   }
 
   $rootDir = Get-RegistryRootDir -RelativePath $Entry.regKeyRelativePath
   if ($null -eq $rootDir) {
+    $result.registryFound = $false
     return $result
   }
 
@@ -375,19 +382,26 @@ function Get-MSBuildReadiness {
     verDefine                = $Entry.verDefine
     productName              = $Entry.productName
     readiness                = 'notFound'
-    registryFound            = $false
+    registryFound            = $null
     rootDirExists            = $null
     rsvarsFound              = $null
     envOptionsFound          = $null
     envOptionsHasLibraryPath = $null
   }
 
+  if ('MSBuild' -notin $Entry.supportedBuildSystems -or $Platform -notin $Entry.supportedPlatforms) {
+    $result.readiness = 'notApplicable'
+    return $result
+  }
+
   if ([string]::IsNullOrWhiteSpace($Entry.regKeyRelativePath)) {
+    $result.registryFound = $false
     return $result
   }
 
   $rootDir = Get-RegistryRootDir -RelativePath $Entry.regKeyRelativePath
   if ($null -eq $rootDir) {
+    $result.registryFound = $false
     return $result
   }
 
@@ -463,7 +477,7 @@ function Write-DetectInstalledOutput {
 
   # Text format: only show detected installations (readiness != notFound)
   # @() forces empty array -- Where-Object returns $null under StrictMode when no matches
-  $found = @($Installations | Where-Object { $_.readiness -ne 'notFound' })
+  $found = @($Installations | Where-Object { $_.readiness -in @('ready', 'partialInstall') })
   if ($found.Count -eq 0) {
     Write-Output 'No installations found'
     return
@@ -571,7 +585,7 @@ try {
       exit 5
     }
     # @() forces empty array -- Where-Object returns $null under StrictMode when no matches
-    $anyFound = @($installations | Where-Object { $_.readiness -ne 'notFound' }).Count -gt 0
+    $anyFound = @($installations | Where-Object { $_.readiness -in @('ready', 'partialInstall') }).Count -gt 0
     Write-DetectInstalledOutput -Installations $installations -Platform $Platform -BuildSystem $BuildSystem -ToolVersion $ToolVersion -Format $Format
     if (-not $anyFound) { exit 6 }
     exit 0

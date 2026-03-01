@@ -232,8 +232,14 @@ releases based on demand.
 
 ### Detection mechanism
 
-Detection is registry-based.  The tool scans the Windows registry
-under the following hive paths (HKCU checked before HKLM):
+Before performing any registry check, the tool consults the
+`supportedBuildSystems` and `supportedPlatforms` arrays in the dataset
+entry.  If the requested build system or platform is absent from the
+entry's arrays, the entry is assigned `readiness: notApplicable` and
+no registry access is attempted for that entry.
+
+Detection is otherwise registry-based.  The tool scans the Windows
+registry under the following hive paths (HKCU checked before HKLM):
 
 - Delphi 7 and earlier: `\Software\Borland\Delphi\<ProductVersion>`
 - Delphi 2005 - 2007: `\Software\Borland\BDS\<bdsVersion>`
@@ -255,13 +261,15 @@ not found.  A future `-SearchPath` option may address this.
 
 ### Readiness states
 
-Each detected installation is assessed and assigned a `readiness`
-value:
+Each dataset entry is assessed and assigned a `readiness` value:
 
 - `ready` -- all required components appear to be present
 - `partialInstall` -- registry found but one or more required
   components are missing or unverifiable
-- `notFound` -- no registry entry detected for this version
+- `notFound` -- registry was checked but no entry was detected for
+  this version
+- `notApplicable` -- this version does not support the requested
+  platform or build system; no registry check was performed
 
 ### DCC readiness components
 
@@ -320,9 +328,10 @@ servers.
 
 ### Output (text format, default)
 
-Only detected installations (readiness `ready` or `partialInstall`)
-are listed, in dataset order.  If no Delphi installations are found
-on this machine, a single line is emitted:
+Only entries with readiness `ready` or `partialInstall` are listed,
+in dataset order.  Entries with readiness `notFound` or `notApplicable`
+are silently omitted.  If no entries remain after filtering, a single
+line is emitted:
 
     No installations found
 
@@ -348,8 +357,14 @@ Use `-Format json` to see all known versions including those not found.
 ### Output (json format)
 
 `installations` is always an array.  Every version known to the
-dataset is present in the array -- versions not found on this machine
-appear with `readiness: "notFound"` and null component fields.
+dataset is present in the array.  Entries that were not checked appear
+with null component fields; the `readiness` value distinguishes why:
+
+- `notFound` -- registry was checked; `registryFound` is `false`
+- `notApplicable` -- no check was performed; `registryFound` is `null`
+
+Use `-Format json` to inspect which versions are `notApplicable` for
+the requested platform or build system combination.
 
     {
       "ok": true,
