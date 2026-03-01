@@ -6,28 +6,28 @@
 .DESCRIPTION
   Covers: output lines produced for various entry shapes.
 
-  The label column is 22 chars wide.  Value-presence assertions use array
+  The label column is 20 chars wide.  Value-presence assertions use array
   -match filtering so that a future padding tweak does not produce a cryptic
   string-mismatch failure.
 
   Context 1 - Entry with all optional fields populated (VER370):
-    Verifies all seven lines are present -- ver, product_name, compilerVersion,
-    package_version, bds_reg_version, registry_key_relpath, aliases -- and that
-    the total line count is 7.
+    Verifies all six lines are present -- verDefine, productName, compilerVersion,
+    packageVersion, regKeyRelativePath, aliases -- and that
+    the total line count is 6.
 
-  Context 2 - Entry with a null optional field (VER150, bds_reg_version null):
-    Verifies the bds_reg_version line is absent and total line count is 6.
+  Context 2 - Entry (VER150):
+    Verifies the standard fields produce a total line count of 6.
 
   Context 3 - Aliases are comma-joined on one line:
     Verifies that multiple aliases appear as a comma-separated list.
 
   Context 4 - -Format json, all optional fields populated (VER370):
     Verifies the output is a single item that parses as valid JSON, ok is $true,
-    command is 'resolve', and result contains all fields including bds_reg_version.
+    command is 'resolve', and result contains verDefine and regKeyRelativePath.
 
-  Context 5 - -Format json, bds_reg_version is null:
-    Verifies that bds_reg_version is present in the JSON result as null (unlike
-    text mode, which omits the line entirely).
+  Context 5 - -Format json, VER150 entry:
+    Verifies that result.verDefine is correct and that bds_reg_version is not
+    present in the result object.
 #>
 
 # PESTER 5 SCOPING RULES apply here -- see Resolve-DefaultDataFilePath.Tests.ps1
@@ -46,62 +46,56 @@ Describe 'Write-ResolveOutput' {
 
     BeforeAll {
       $script:entry = [pscustomobject]@{
-        ver                  = 'VER370'
-        product_name         = 'Delphi 13 Florence'
-        compilerVersion      = '37.0'
-        package_version      = '370'
-        bds_reg_version      = '37.0'
-        registry_key_relpath = '\Software\Embarcadero\BDS\37.0'
-        aliases              = @('VER370', 'Delphi13', 'Delphi 13 Florence', 'D13')
+        verDefine          = 'VER370'
+        productName        = 'Delphi 13 Florence'
+        compilerVersion    = '37.0'
+        packageVersion     = '370'
+        regKeyRelativePath = '\Software\Embarcadero\BDS\37.0'
+        aliases            = @('VER370', 'Delphi13', 'Delphi 13 Florence', 'D13')
       }
       $script:output = Write-ResolveOutput -Entry $script:entry
     }
 
-    It 'output includes a line with the ver value' {
-      ($script:output -match 'ver\s+VER370') | Should -Not -BeNullOrEmpty
+    It 'output includes a line with the verDefine value' {
+      ($script:output -match 'verDefine\s+VER370') | Should -Not -BeNullOrEmpty
     }
 
-    It 'output includes a line with the product_name value' {
-      ($script:output -match 'product_name\s+Delphi 13 Florence') | Should -Not -BeNullOrEmpty
+    It 'output includes a line with the productName value' {
+      ($script:output -match 'productName\s+Delphi 13 Florence') | Should -Not -BeNullOrEmpty
     }
 
     It 'output includes a line with the compilerVersion value' {
       ($script:output -match 'compilerVersion\s+37\.0') | Should -Not -BeNullOrEmpty
     }
 
-    It 'output includes a line with the package_version value' {
-      ($script:output -match 'package_version\s+370') | Should -Not -BeNullOrEmpty
+    It 'output includes a line with the packageVersion value' {
+      ($script:output -match 'packageVersion\s+370') | Should -Not -BeNullOrEmpty
     }
 
-    It 'output includes a line with the bds_reg_version value' {
-      ($script:output -match 'bds_reg_version\s+37\.0') | Should -Not -BeNullOrEmpty
-    }
-
-    It 'output includes a line with the registry_key_relpath value' {
-      ($script:output -match 'registry_key_relpath\s+') | Should -Not -BeNullOrEmpty
+    It 'output includes a line with the regKeyRelativePath value' {
+      ($script:output -match 'regKeyRelativePath\s+') | Should -Not -BeNullOrEmpty
     }
 
     It 'output includes a line with the aliases value' {
       ($script:output -match 'aliases\s+') | Should -Not -BeNullOrEmpty
     }
 
-    It 'output has exactly seven lines' {
-      $script:output | Should -HaveCount 7
+    It 'output has exactly six lines' {
+      $script:output | Should -HaveCount 6
     }
 
   }
 
-  Context 'Given an entry with a null bds_reg_version' {
+  Context 'Given an entry for VER150' {
 
     BeforeAll {
       $script:entry = [pscustomobject]@{
-        ver                  = 'VER150'
-        product_name         = 'Delphi 7'
-        compilerVersion      = '15.0'
-        package_version      = '70'
-        bds_reg_version      = $null
-        registry_key_relpath = '\Software\Borland\Delphi\7.0'
-        aliases              = @('VER150', 'Delphi7', 'D7')
+        verDefine          = 'VER150'
+        productName        = 'Delphi 7'
+        compilerVersion    = '15.0'
+        packageVersion     = '70'
+        regKeyRelativePath = '\Software\Borland\Delphi\7.0'
+        aliases            = @('VER150', 'Delphi7', 'D7')
       }
       $script:output = Write-ResolveOutput -Entry $script:entry
     }
@@ -110,23 +104,18 @@ Describe 'Write-ResolveOutput' {
       $script:output | Should -HaveCount 6
     }
 
-    It 'output does not include a bds_reg_version line' {
-      ($script:output -match '^bds_reg_version\s') | Should -BeNullOrEmpty
-    }
-
   }
 
   Context 'Given an entry with multiple aliases' {
 
     BeforeAll {
       $script:entry = [pscustomobject]@{
-        ver                  = 'VER150'
-        product_name         = 'Delphi 7'
-        compilerVersion      = '15.0'
-        package_version      = '70'
-        bds_reg_version      = $null
-        registry_key_relpath = '\Software\Borland\Delphi\7.0'
-        aliases              = @('VER150', 'Delphi7', 'D7')
+        verDefine          = 'VER150'
+        productName        = 'Delphi 7'
+        compilerVersion    = '15.0'
+        packageVersion     = '70'
+        regKeyRelativePath = '\Software\Borland\Delphi\7.0'
+        aliases            = @('VER150', 'Delphi7', 'D7')
       }
       $script:output = Write-ResolveOutput -Entry $script:entry
     }
@@ -141,13 +130,12 @@ Describe 'Write-ResolveOutput' {
 
     BeforeAll {
       $script:entry = [pscustomobject]@{
-        ver                  = 'VER370'
-        product_name         = 'Delphi 13 Florence'
-        compilerVersion      = '37.0'
-        package_version      = '370'
-        bds_reg_version      = '37.0'
-        registry_key_relpath = '\Software\Embarcadero\BDS\37.0'
-        aliases              = @('VER370', 'Delphi13', 'Delphi 13 Florence', 'D13')
+        verDefine          = 'VER370'
+        productName        = 'Delphi 13 Florence'
+        compilerVersion    = '37.0'
+        packageVersion     = '370'
+        regKeyRelativePath = '\Software\Embarcadero\BDS\37.0'
+        aliases            = @('VER370', 'Delphi13', 'Delphi 13 Florence', 'D13')
       }
       $script:output = Write-ResolveOutput -Entry $script:entry -ToolVersion '0.1.0' -Format 'json'
       $script:json   = $script:output | ConvertFrom-Json
@@ -169,12 +157,12 @@ Describe 'Write-ResolveOutput' {
       $script:json.command | Should -Be 'resolve'
     }
 
-    It 'result.ver matches the entry value' {
-      $script:json.result.ver | Should -Be 'VER370'
+    It 'result.verDefine matches the entry value' {
+      $script:json.result.verDefine | Should -Be 'VER370'
     }
 
-    It 'result.bds_reg_version matches the entry value' {
-      $script:json.result.bds_reg_version | Should -Be '37.0'
+    It 'result.regKeyRelativePath matches the entry value' {
+      $script:json.result.regKeyRelativePath | Should -Be '\Software\Embarcadero\BDS\37.0'
     }
 
     It 'result.aliases contains all four aliases' {
@@ -183,25 +171,27 @@ Describe 'Write-ResolveOutput' {
 
   }
 
-  Context 'Given -Format json and bds_reg_version is null' {
+  Context 'Given -Format json and the VER150 entry' {
 
     BeforeAll {
       $script:entry = [pscustomobject]@{
-        ver                  = 'VER150'
-        product_name         = 'Delphi 7'
-        compilerVersion      = '15.0'
-        package_version      = '70'
-        bds_reg_version      = $null
-        registry_key_relpath = '\Software\Borland\Delphi\7.0'
-        aliases              = @('VER150', 'Delphi7', 'D7')
+        verDefine          = 'VER150'
+        productName        = 'Delphi 7'
+        compilerVersion    = '15.0'
+        packageVersion     = '70'
+        regKeyRelativePath = '\Software\Borland\Delphi\7.0'
+        aliases            = @('VER150', 'Delphi7', 'D7')
       }
       $script:output = Write-ResolveOutput -Entry $script:entry -ToolVersion '0.1.0' -Format 'json'
       $script:json   = $script:output | ConvertFrom-Json
     }
 
-    It 'result.bds_reg_version is null rather than absent' {
-      $script:json.result.PSObject.Properties['bds_reg_version'] | Should -Not -BeNullOrEmpty
-      $script:json.result.bds_reg_version | Should -Be $null
+    It 'result.verDefine is VER150' {
+      $script:json.result.verDefine | Should -Be 'VER150'
+    }
+
+    It 'result does not contain a bds_reg_version property' {
+      $script:json.result.PSObject.Properties['bds_reg_version'] | Should -BeNullOrEmpty
     }
 
   }

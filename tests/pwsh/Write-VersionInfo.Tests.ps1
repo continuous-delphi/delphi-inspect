@@ -18,26 +18,26 @@
   Context 2 - Data object with null meta:
     Verifies the generated line is absent and total line count is 3.
 
-  Context 3 - Data object with an empty generated_utc_date:
+  Context 3 - Data object with an empty generatedUtcDate:
     Verifies the generated line is absent and total line count is 3.
 
-  Context 4 - Data object with a whitespace-only generated_utc_date:
+  Context 4 - Data object with a whitespace-only generatedUtcDate:
     Verifies the generated line is absent and total line count is 3.
     (The implementation uses IsNullOrWhiteSpace, so '   ' must be suppressed
     the same way as '' and $null.)
 
-  Context 5 - Data object with a null generated_utc_date within a non-null meta:
+  Context 5 - Data object with a null generatedUtcDate within a non-null meta:
     Verifies the generated line is absent and total line count is 3.
-    (meta is non-null, so the first guard passes; generated_utc_date is null,
+    (meta is non-null, so the first guard passes; generatedUtcDate is null,
     so the second guard fails and $generated stays null.)
 
   Context 6 - -Format json, all fields populated:
     Verifies the output is a single item that parses as valid JSON, ok is $true,
     command is 'version', and result contains schemaVersion, dataVersion, and
-    generated_utc_date with the expected values.
+    generatedUtcDate with the expected values.
 
   Context 7 - -Format json, meta is null:
-    Verifies the output parses as valid JSON and result.generated_utc_date is null.
+    Verifies the output parses as valid JSON and result.generatedUtcDate is null.
 #>
 
 # PESTER 5 SCOPING RULES apply here -- see Resolve-DefaultDataFilePath.Tests.ps1
@@ -58,7 +58,7 @@ Describe 'Write-VersionInfo' {
       $script:data = [pscustomobject]@{
         schemaVersion = '1.0.0'
         dataVersion   = '0.1.0'
-        meta          = [pscustomobject]@{ generated_utc_date = '2026-01-01' }
+        meta          = [pscustomobject]@{ generatedUtcDate = '2026-01-01' }
       }
       $script:output = Write-VersionInfo -ToolVersion '0.1.0' -Data $script:data
     }
@@ -78,7 +78,7 @@ Describe 'Write-VersionInfo' {
       ($script:output -match 'schemaVersion\s+1\.0\.0') | Should -Not -BeNullOrEmpty
     }
 
-    It 'output includes a generated line when meta.generated_utc_date is set' {
+    It 'output includes a generated line when meta.generatedUtcDate is set' {
       ($script:output -match 'generated\s+2026-01-01') | Should -Not -BeNullOrEmpty
     }
 
@@ -109,13 +109,13 @@ Describe 'Write-VersionInfo' {
 
   }
 
-  Context 'Given a data object with an empty generated_utc_date' {
+  Context 'Given a data object with an empty generatedUtcDate' {
 
     BeforeAll {
       $script:data = [pscustomobject]@{
         schemaVersion = '1.0.0'
         dataVersion   = '0.1.0'
-        meta          = [pscustomobject]@{ generated_utc_date = '' }
+        meta          = [pscustomobject]@{ generatedUtcDate = '' }
       }
       $script:output = Write-VersionInfo -ToolVersion '0.1.0' -Data $script:data
     }
@@ -130,13 +130,13 @@ Describe 'Write-VersionInfo' {
 
   }
 
-  Context 'Given a data object with a whitespace-only generated_utc_date' {
+  Context 'Given a data object with a whitespace-only generatedUtcDate' {
 
     BeforeAll {
       $script:data = [pscustomobject]@{
         schemaVersion = '1.0.0'
         dataVersion   = '0.1.0'
-        meta          = [pscustomobject]@{ generated_utc_date = '   ' }
+        meta          = [pscustomobject]@{ generatedUtcDate = '   ' }
       }
       $script:output = Write-VersionInfo -ToolVersion '0.1.0' -Data $script:data
     }
@@ -151,13 +151,13 @@ Describe 'Write-VersionInfo' {
 
   }
 
-  Context 'Given a data object with a null generated_utc_date within a non-null meta' {
+  Context 'Given a data object with a null generatedUtcDate within a non-null meta' {
 
     BeforeAll {
       $script:data = [pscustomobject]@{
         schemaVersion = '1.0.0'
         dataVersion   = '0.1.0'
-        meta          = [pscustomobject]@{ generated_utc_date = $null }
+        meta          = [pscustomobject]@{ generatedUtcDate = $null }
       }
       $script:output = Write-VersionInfo -ToolVersion '0.1.0' -Data $script:data
     }
@@ -178,7 +178,7 @@ Describe 'Write-VersionInfo' {
       $script:data = [pscustomobject]@{
         schemaVersion = '1.0.0'
         dataVersion   = '0.1.0'
-        meta          = [pscustomobject]@{ generated_utc_date = '2026-01-01' }
+        meta          = [pscustomobject]@{ generatedUtcDate = '2026-01-01' }
       }
       $script:output = Write-VersionInfo -ToolVersion '0.1.0' -Data $script:data -Format 'json'
       $script:json   = $script:output | ConvertFrom-Json
@@ -208,8 +208,8 @@ Describe 'Write-VersionInfo' {
       $script:json.result.dataVersion | Should -Be '0.1.0'
     }
 
-    It 'result.generated_utc_date matches the dataset value' {
-      $script:json.result.generated_utc_date | Should -Be '2026-01-01'
+    It 'result.generatedUtcDate matches the dataset value' {
+      $script:json.result.generatedUtcDate | Should -Be '2026-01-01'
     }
 
   }
@@ -230,8 +230,8 @@ Describe 'Write-VersionInfo' {
       { $script:output | ConvertFrom-Json } | Should -Not -Throw
     }
 
-    It 'result.generated_utc_date is null' {
-      $script:json.result.generated_utc_date | Should -Be $null
+    It 'result.generatedUtcDate is null' {
+      $script:json.result.generatedUtcDate | Should -Be $null
     }
 
   }

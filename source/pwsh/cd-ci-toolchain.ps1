@@ -123,8 +123,8 @@ function Write-VersionInfo {
 
   # generated date lives under meta.generated_utc_date in our dataset
   $generated = $null
-  if ($null -ne $Data.meta -and $null -ne $Data.meta.generated_utc_date) {
-    $generated = $Data.meta.generated_utc_date
+  if ($null -ne $Data.meta -and $null -ne $Data.meta.generatedUtcDate) {
+    $generated = $Data.meta.generatedUtcDate
   }
 
   if ($Format -eq 'json') {
@@ -135,7 +135,7 @@ function Write-VersionInfo {
       result  = [pscustomobject]@{
         schemaVersion      = $schemaVersion
         dataVersion        = $dataVersion
-        generated_utc_date = $generated
+        generatedUtcDate   = $generated
       }
     } )
     return
@@ -156,14 +156,14 @@ function Resolve-VersionEntry {
   )
 
   foreach ($entry in $Data.versions) {
+    # Check verDefine first -- not stored in aliases by design
+    if ($null -ne $entry.verDefine -and
+        [string]::Equals($entry.verDefine, $Name, [System.StringComparison]::OrdinalIgnoreCase)) {
+      return $entry
+    }
+    # Then scan aliases
     if ($null -ne $entry.aliases) {
       foreach ($alias in $entry.aliases) {
-        # First: match canonical VER### directly (in case not listed as an alias)
-        if ($null -ne $entry.ver -and
-          [string]::Equals($entry.ver, $Name, [System.StringComparison]::OrdinalIgnoreCase)) {
-          return $entry
-        }
-        # Then: match aliases
         if ([string]::Equals($alias, $Name, [System.StringComparison]::OrdinalIgnoreCase)) {
           return $entry
         }
@@ -186,33 +186,29 @@ function Write-ResolveOutput {
       command = 'resolve'
       tool    = [pscustomobject]@{ name = 'cd-ci-toolchain'; impl = 'pwsh'; version = $ToolVersion }
       result  = [pscustomobject]@{
-        ver                  = $Entry.ver
-        product_name         = $Entry.product_name
-        compilerVersion      = $Entry.compilerVersion
-        package_version      = $Entry.package_version
-        bds_reg_version      = $Entry.bds_reg_version
-        registry_key_relpath = $Entry.registry_key_relpath
-        aliases              = $Entry.aliases
+        verDefine          = $Entry.verDefine
+        productName        = $Entry.productName
+        compilerVersion    = $Entry.compilerVersion
+        packageVersion     = $Entry.packageVersion
+        regKeyRelativePath = $Entry.regKeyRelativePath
+        aliases            = $Entry.aliases
       }
     } )
     return
   }
 
-  # Label column is 22 chars wide to accommodate 'registry_key_relpath' (20 chars).
-  Write-Output ("ver                   {0}" -f $Entry.ver)
-  Write-Output ("product_name          {0}" -f $Entry.product_name)
-  Write-Output ("compilerVersion       {0}" -f $Entry.compilerVersion)
-  if (-not [string]::IsNullOrWhiteSpace($Entry.package_version)) {
-    Write-Output ("package_version       {0}" -f $Entry.package_version)
+  # Label column is 20 chars wide to accommodate 'regKeyRelativePath' 
+  Write-Output ("verDefine           {0}" -f $Entry.verDefine)
+  Write-Output ("productName         {0}" -f $Entry.productName)
+  Write-Output ("compilerVersion     {0}" -f $Entry.compilerVersion)
+  if (-not [string]::IsNullOrWhiteSpace($Entry.packageVersion)) {
+    Write-Output ("packageVersion      {0}" -f $Entry.packageVersion)
   }
-  if (-not [string]::IsNullOrWhiteSpace($Entry.bds_reg_version)) {
-    Write-Output ("bds_reg_version       {0}" -f $Entry.bds_reg_version)
-  }
-  if (-not [string]::IsNullOrWhiteSpace($Entry.registry_key_relpath)) {
-    Write-Output ("registry_key_relpath  {0}" -f $Entry.registry_key_relpath)
+  if (-not [string]::IsNullOrWhiteSpace($Entry.regKeyRelativePath)) {
+    Write-Output ("regKeyRelativePath  {0}" -f $Entry.regKeyRelativePath)
   }
   if ($Entry.aliases -and $Entry.aliases.Count -gt 0) {
-    Write-Output ("aliases               {0}" -f ($Entry.aliases -join ', '))
+    Write-Output ("aliases             {0}" -f ($Entry.aliases -join ', '))
   }
 }
 

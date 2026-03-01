@@ -8,7 +8,7 @@
 
   Context 1 - Valid JSON file:
     Verifies the returned object has the correct schemaVersion, dataVersion,
-    meta.generated_utc_date, and compilers properties.
+    meta.generatedUtcDate, and compilers properties.
 
   Context 2 - Missing file:
     Verifies the exception message contains "Data file not found".
@@ -45,8 +45,8 @@ Describe 'Import-JsonData' {
       $script:result.dataVersion | Should -Be '0.1.0'
     }
 
-    It 'returns a parsed object with the correct meta.generated_utc_date' {
-      $script:result.meta.generated_utc_date | Should -Be '2026-01-01'
+    It 'returns a parsed object with the correct meta.generatedUtcDate' {
+      $script:result.meta.generatedUtcDate | Should -Be '2026-01-01'
     }
 
     It 'returns a parsed object with an empty compilers list' {

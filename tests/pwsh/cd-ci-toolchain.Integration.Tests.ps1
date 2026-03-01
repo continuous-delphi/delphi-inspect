@@ -38,7 +38,7 @@
   explicitly using the resolve fixture (delphi-compiler-versions.resolve.json).
 
   Context 6 - -Resolve -Name VER150 (resolve by canonical VER):
-    Exit 0, ver line present, product_name line present, clean stderr.
+    Exit 0, verDefine line present, productName line present, clean stderr.
 
   Context 7 - -Resolve -Name D7 (resolve by short alias):
     Exit 0, ver line shows VER150.
@@ -61,19 +61,18 @@
     script body runs), no stdout, stderr references parameter set resolution.
 
   Context 12 - -Resolve -Name VER370 (all fields in text mode):
-    All seven output lines present (ver, product_name, compilerVersion,
-    package_version, bds_reg_version, registry_key_relpath, aliases).
+    All six output lines present (verDefine, productName, compilerVersion,
+    packageVersion, regKeyRelativePath, aliases).
     Fills the text-mode all-fields gap left by Contexts 6-8 which use VER150.
 
   Context 13 - -Version -Format json and a valid -DataFile:
     Exit 0, stdout is a single JSON envelope with ok=true, command='version',
-    and result containing schemaVersion, dataVersion, generated_utc_date.
+    and result containing schemaVersion, dataVersion, generatedUtcDate.
     Clean stderr.
 
   Context 14 - -Resolve -Name VER150 -Format json and a valid -DataFile:
     Exit 0, stdout is a single JSON envelope with ok=true, command='resolve',
-    result.ver=VER150, result.bds_reg_version=null (present as null, unlike
-    text mode which omits the line), and result.aliases containing 'D7'.
+    result.verDefine=VER150, and result.aliases containing 'D7'.
     Clean stderr.
 
   Context 15 - -DataFile pointing to a missing path -Format json:
@@ -259,12 +258,12 @@ Describe 'cd-ci-toolchain.ps1 (subprocess)' {
       $script:run.ExitCode | Should -Be 0
     }
 
-    It 'stdout includes a ver line with the canonical VER value' {
-      ($script:run.StdOut -match 'ver\s+VER150') | Should -Not -BeNullOrEmpty
+    It 'stdout includes a verDefine line with the canonical VER value' {
+      ($script:run.StdOut -match 'verDefine\s+VER150') | Should -Not -BeNullOrEmpty
     }
 
-    It 'stdout includes a product_name line' {
-      ($script:run.StdOut -match 'product_name\s+Delphi 7') | Should -Not -BeNullOrEmpty
+    It 'stdout includes a productName line' {
+      ($script:run.StdOut -match 'productName\s+Delphi 7') | Should -Not -BeNullOrEmpty
     }
 
     It 'stdout includes a compilerVersion line' {
@@ -292,8 +291,8 @@ Describe 'cd-ci-toolchain.ps1 (subprocess)' {
       $script:run.ExitCode | Should -Be 0
     }
 
-    It 'ver line resolves to the canonical VER150' {
-      ($script:run.StdOut -match 'ver\s+VER150') | Should -Not -BeNullOrEmpty
+    It 'verDefine line resolves to the canonical VER150' {
+      ($script:run.StdOut -match 'verDefine\s+VER150') | Should -Not -BeNullOrEmpty
     }
 
   }
@@ -309,8 +308,8 @@ Describe 'cd-ci-toolchain.ps1 (subprocess)' {
       $script:run.ExitCode | Should -Be 0
     }
 
-    It 'ver line resolves to the canonical VER150' {
-      ($script:run.StdOut -match 'ver\s+VER150') | Should -Not -BeNullOrEmpty
+    It 'verDefine line resolves to the canonical VER150' {
+      ($script:run.StdOut -match 'verDefine\s+VER150') | Should -Not -BeNullOrEmpty
     }
 
   }
@@ -326,8 +325,8 @@ Describe 'cd-ci-toolchain.ps1 (subprocess)' {
       $script:run.ExitCode | Should -Be 0
     }
 
-    It 'ver line resolves to the canonical VER150' {
-      ($script:run.StdOut -match 'ver\s+VER150') | Should -Not -BeNullOrEmpty
+    It 'verDefine line resolves to the canonical VER150' {
+      ($script:run.StdOut -match 'verDefine\s+VER150') | Should -Not -BeNullOrEmpty
     }
 
   }
@@ -409,12 +408,8 @@ Describe 'cd-ci-toolchain.ps1 (subprocess)' {
       $script:run.ExitCode | Should -Be 0
     }
 
-    It 'stdout has exactly seven lines' {
-      $script:run.StdOut | Should -HaveCount 7
-    }
-
-    It 'stdout includes a bds_reg_version line' {
-      ($script:run.StdOut -match 'bds_reg_version\s+37\.0') | Should -Not -BeNullOrEmpty
+    It 'stdout has exactly six lines' {
+      $script:run.StdOut | Should -HaveCount 6
     }
 
     It 'produces no stderr' {
@@ -452,8 +447,8 @@ Describe 'cd-ci-toolchain.ps1 (subprocess)' {
       ($script:run.StdOut -join "`n") | Should -Match 'dataVersion'
     }
 
-    It 'JSON result.generated_utc_date is not null' {
-      $script:json.result.generated_utc_date | Should -Not -BeNullOrEmpty
+    It 'JSON result.generatedUtcDate is not null' {
+      $script:json.result.generatedUtcDate | Should -Not -BeNullOrEmpty
     }
 
     It 'produces no stderr' {
@@ -483,12 +478,8 @@ Describe 'cd-ci-toolchain.ps1 (subprocess)' {
       $script:json.command | Should -Be 'resolve'
     }
 
-    It 'JSON result.ver is VER150' {
-      $script:json.result.ver | Should -Be 'VER150'
-    }
-
-    It 'JSON result.bds_reg_version is null' {
-      $script:json.result.bds_reg_version | Should -Be $null
+    It 'JSON result.verDefine is VER150' {
+      $script:json.result.verDefine | Should -Be 'VER150'
     }
 
     It 'JSON result.aliases contains D7' {

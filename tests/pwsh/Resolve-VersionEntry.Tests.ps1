@@ -7,7 +7,7 @@
   Covers: alias lookup logic across the versions array.
 
   Uses delphi-compiler-versions.resolve.json, which contains two entries:
-    VER150 (Delphi 7)  -- aliases: VER150, Delphi7, D7  -- bds_reg_version: null
+    VER150 (Delphi 7)  -- aliases: VER150, Delphi7, D7
     VER370 (Delphi 13 Florence) -- aliases: VER370, Delphi13, Delphi 13 Florence, D13
 
   Context 1 - Match by canonical VER string:
@@ -50,9 +50,9 @@ Describe 'Resolve-VersionEntry' {
       $result | Should -Not -BeNull
     }
 
-    It 'returned entry has the correct ver' {
+    It 'returned entry has the correct verDefine' {
       $result = Resolve-VersionEntry -Name 'VER150' -Data $script:data
-      $result.ver | Should -Be 'VER150'
+      $result.verDefine | Should -Be 'VER150'
     }
 
   }
@@ -64,9 +64,9 @@ Describe 'Resolve-VersionEntry' {
       $result | Should -Not -BeNull
     }
 
-    It 'returned entry has the correct ver' {
+    It 'returned entry has the correct verDefine' {
       $result = Resolve-VersionEntry -Name 'D7' -Data $script:data
-      $result.ver | Should -Be 'VER150'
+      $result.verDefine | Should -Be 'VER150'
     }
 
   }
@@ -78,9 +78,9 @@ Describe 'Resolve-VersionEntry' {
       $result | Should -Not -BeNull
     }
 
-    It 'returned entry has the correct ver' {
+    It 'returned entry has the correct verDefine' {
       $result = Resolve-VersionEntry -Name 'Delphi 13 Florence' -Data $script:data
-      $result.ver | Should -Be 'VER370'
+      $result.verDefine | Should -Be 'VER370'
     }
 
   }
@@ -89,17 +89,17 @@ Describe 'Resolve-VersionEntry' {
 
     It 'resolves lower-case VER string to the correct entry' {
       $result = Resolve-VersionEntry -Name 'ver150' -Data $script:data
-      $result.ver | Should -Be 'VER150'
+      $result.verDefine | Should -Be 'VER150'
     }
 
     It 'resolves lower-case short alias to the correct entry' {
       $result = Resolve-VersionEntry -Name 'd7' -Data $script:data
-      $result.ver | Should -Be 'VER150'
+      $result.verDefine | Should -Be 'VER150'
     }
 
     It 'resolves upper-case short alias to the correct entry' {
       $result = Resolve-VersionEntry -Name 'D7' -Data $script:data
-      $result.ver | Should -Be 'VER150'
+      $result.verDefine | Should -Be 'VER150'
     }
 
   }
@@ -125,9 +125,9 @@ Describe 'Resolve-VersionEntry' {
       $result | Should -Not -BeNull
     }
 
-    It 'returned entry has the correct ver' {
+    It 'returned entry has the correct verDefine' {
       $result = Resolve-VersionEntry -Name 'VER370' -Data $script:data
-      $result.ver | Should -Be 'VER370'
+      $result.verDefine | Should -Be 'VER370'
     }
 
   }
