@@ -259,3 +259,10 @@ git submodule update --init
 ```
 
 from the repo root.
+
+### Auto Discovery
+
+Reminder that test files are auto-discovered by Pester.
+Any file matching `*.Tests.ps1` under `tests/pwsh/` will be picked up
+automatically when `run-tests.ps1` is executed.
+No registration or explicit listing is required.

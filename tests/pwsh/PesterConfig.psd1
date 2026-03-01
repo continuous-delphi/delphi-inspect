@@ -8,6 +8,7 @@
 
 @{
   Run = @{
+    #Pester discovers all *.Tests.ps1 files automatically in this path
     Path = './tests/pwsh'
   }
   Output = @{
