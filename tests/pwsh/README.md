@@ -99,7 +99,12 @@ then `aliases` array.  All comparisons are case-insensitive.
 - `-Format json`: result.aliases contains all aliases
 - `-Format json`: result does not contain a bds_reg_version property
 
-### cd-ci-toolchain.ps1 subprocess integration (77 tests)
+### Write-ListKnownOutput (17 tests)
+
+- Text format, all fields populated: VER150 and VER370 entry lines present; VER150 line contains compilerVersion and productName values; total line count is exactly 2
+- `-Format json`, all fields populated: output is a single item that parses as valid JSON; ok is true; command is "listKnown"; result.schemaVersion, result.dataVersion, result.generatedUtcDate match dataset values; result.versions has 2 entries; first entry has verDefine, productName, regKeyRelativePath, aliases, and notes fields
+
+### cd-ci-toolchain.ps1 subprocess integration (86 tests)
 
 Invokes the script as a child process via `Invoke-ToolProcess`; validates exit
 codes, stdout, and stderr.  Covers the dispatch block that the dot-source guard
@@ -123,6 +128,8 @@ skips during unit tests.
 - `-Resolve -Name VER150 -Format json`: exit 0, stdout parses as JSON, ok=true/command=resolve, result.verDefine=VER150, result.aliases contains D7, clean stderr
 - `-DataFile` missing path `-Format json`: exit 3, stdout parses as JSON error envelope, ok=false/error.code=3/"Data file not found" in message, clean stderr
 - `-Resolve` unknown alias `-Format json`: exit 4, stdout parses as JSON error envelope, ok=false/error.code=4/"Alias not found" in message, clean stderr
+- `-ListKnown` + valid `-DataFile`: exit 0, exactly 2 stdout lines, VER150 entry line present, clean stderr
+- `-ListKnown -Format json` + valid `-DataFile`: exit 0, stdout parses as JSON, ok=true/command=listKnown, result.versions non-empty, clean stderr
 - `-Format yaml` (invalid value): exit 1 (parameter binder rejects ValidateSet value), no stdout, stderr present
 
 The error text for the binder-failure cases is produced by PowerShell's parameter

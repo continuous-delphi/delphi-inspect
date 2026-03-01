@@ -7,11 +7,12 @@ This document describes the command-line interface for
 
 # Overview
 
-`cd-ci-toolchain` provides two primary actions:
+`cd-ci-toolchain` provides three primary actions:
 
 -   `-Version` --- Display tool and dataset metadata
 -   `-Resolve` --- Resolve a Delphi alias or VER### constant to
     canonical version data
+-   `-ListKnown` --- List all known Delphi versions from the dataset
 
 By default, invoking the script with **no switches** performs the
 `-Version` action.
@@ -134,6 +135,58 @@ being omitted.
 
 ------------------------------------------------------------------------
 
+## -ListKnown
+
+List all known Delphi versions from the dataset.
+
+### Examples
+
+    pwsh cd-ci-toolchain.ps1 -ListKnown
+    pwsh cd-ci-toolchain.ps1 -ListKnown -Format json
+    pwsh cd-ci-toolchain.ps1 -ListKnown -DataFile ./data/custom.json
+
+### Output (text format, default)
+
+One line per entry in fixed-width columns: verDefine (12), compilerVersion (10),
+packageVersion (6), productName (trailing).
+
+    VER150      15.0      70    Delphi 7
+    VER370      37.0      370   Delphi 13 Florence
+
+### Output (json format)
+
+    {
+      "ok": true,
+      "command": "listKnown",
+      "tool": {
+        "name": "cd-ci-toolchain",
+        "impl": "pwsh",
+        "version": "0.1.0"
+      },
+      "result": {
+        "schemaVersion": "1.0.0",
+        "dataVersion": "0.1.0",
+        "generatedUtcDate": "2026-01-01",
+        "versions": [
+          {
+            "verDefine": "VER150",
+            "productName": "Delphi 7",
+            "compilerVersion": "15.0",
+            "packageVersion": "70",
+            "regKeyRelativePath": "\\Software\\Borland\\Delphi\\7.0",
+            "aliases": ["VER150", "Delphi7", "D7"],
+            "notes": []
+          }
+        ]
+      }
+    }
+
+`generatedUtcDate` is always present in JSON output; it is `null` when absent
+from the dataset.  All version entry fields are always present regardless of
+null status.
+
+------------------------------------------------------------------------
+
 # Common Options
 
 ## -Format
@@ -170,11 +223,12 @@ code 3.
 
 # Parameter Rules
 
--   `-Version` and `-Resolve` are mutually exclusive (enforced by
-    PowerShell parameter sets; exit code 1 if both are supplied).
+-   `-Version`, `-Resolve`, and `-ListKnown` are mutually exclusive
+    (enforced by PowerShell parameter sets; exit code 1 if more than one
+    is supplied).
 -   With no action switch, the default action is `-Version`.
 -   `-Resolve` requires `-Name`; it may be supplied positionally.
--   `-Format` applies to both `-Version` and `-Resolve`.
+-   `-Format` applies to `-Version`, `-Resolve`, and `-ListKnown`.
 -   Parameter binding errors are handled by PowerShell (exit code 1).
 
 ------------------------------------------------------------------------

@@ -86,6 +86,14 @@
   Context 17 - -Format yaml (invalid ValidateSet value):
     Exit 1 (PowerShell parameter binder rejects 'yaml' before the script body
     runs).  No stdout.  Stderr present.
+
+  Context 18 - -ListKnown with valid -DataFile:
+    Exit 0, exactly 2 stdout lines (one per entry), VER150 entry line present,
+    clean stderr.
+
+  Context 19 - -ListKnown -Format json with valid -DataFile:
+    Exit 0, stdout parses as valid JSON, ok=true, command='listKnown',
+    result.versions is non-empty.  Clean stderr.
 #>
 
 Describe 'cd-ci-toolchain.ps1 (subprocess)' {
@@ -553,6 +561,62 @@ Describe 'cd-ci-toolchain.ps1 (subprocess)' {
 
     It 'JSON error.message contains "Alias not found"' {
       $script:json.error.message | Should -Match 'Alias not found'
+    }
+
+    It 'produces no stderr' {
+      $script:run.StdErr | Should -BeNullOrEmpty
+    }
+
+  }
+
+  Context 'Given -ListKnown and a valid -DataFile' {
+
+    BeforeAll {
+      $script:run = Invoke-ToolProcess -ScriptPath $script:scriptPath `
+                                       -Arguments @('-ListKnown', '-DataFile', $script:resolveFixturePath)
+    }
+
+    It 'exits with code 0' {
+      $script:run.ExitCode | Should -Be 0
+    }
+
+    It 'stdout has exactly 2 lines (one per dataset entry)' {
+      $script:run.StdOut | Should -HaveCount 2
+    }
+
+    It 'stdout includes an entry line for VER150' {
+      ($script:run.StdOut -match 'VER150') | Should -Not -BeNullOrEmpty
+    }
+
+    It 'produces no stderr' {
+      $script:run.StdErr | Should -BeNullOrEmpty
+    }
+
+  }
+
+  Context 'Given -ListKnown -Format json and a valid -DataFile' {
+
+    BeforeAll {
+      $script:run  = Invoke-ToolProcess -ScriptPath $script:scriptPath `
+                                        -Arguments @('-ListKnown', '-Format', 'json', '-DataFile', $script:resolveFixturePath)
+      $script:json = ($script:run.StdOut -join "`n") | ConvertFrom-Json
+    }
+
+    It 'exits with code 0' {
+      $script:run.ExitCode | Should -Be 0
+    }
+
+    It 'stdout parses as valid JSON' {
+      { ($script:run.StdOut -join "`n") | ConvertFrom-Json } | Should -Not -Throw
+    }
+
+    It 'JSON ok is true and command is listKnown' {
+      $script:json.ok      | Should -Be $true
+      $script:json.command | Should -Be 'listKnown'
+    }
+
+    It 'JSON result.versions is a non-empty array' {
+      $script:json.result.versions | Should -Not -BeNullOrEmpty
     }
 
     It 'produces no stderr' {

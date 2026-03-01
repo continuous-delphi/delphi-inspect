@@ -40,6 +40,9 @@ param(
   [Parameter(ParameterSetName='Resolve', Mandatory=$true, Position=0)]
   [string]$Name,
 
+  [Parameter(ParameterSetName='ListKnown')]
+  [switch]$ListKnown,
+
   [Parameter()]
   [string]$DataFile,
 
@@ -217,6 +220,47 @@ function Write-ResolveOutput {
   }
 }
 
+function Write-ListKnownOutput {
+  param(
+    [psobject]$Data,
+    [string]$ToolVersion = '',
+    [string]$Format = 'text'
+  )
+
+  if ($Format -eq 'json') {
+    $versions = @($Data.versions | ForEach-Object {
+      [pscustomobject]@{
+        verDefine          = $_.verDefine
+        productName        = $_.productName
+        compilerVersion    = $_.compilerVersion
+        packageVersion     = $_.packageVersion
+        regKeyRelativePath = $_.regKeyRelativePath
+        aliases            = $_.aliases
+        notes              = $_.notes
+      }
+    })
+    Write-JsonOutput ([pscustomobject]@{
+      ok      = $true
+      command = 'listKnown'
+      tool    = [pscustomobject]@{ name = 'cd-ci-toolchain'; impl = 'pwsh'; version = $ToolVersion }
+      result  = [pscustomobject]@{
+        schemaVersion    = $Data.schemaVersion
+        dataVersion      = $Data.dataVersion
+        generatedUtcDate = if ($null -ne $Data.meta) { $Data.meta.generatedUtcDate } else { $null }
+        versions         = $versions
+      }
+    })
+    return
+  }
+
+  # Text: entry list -- fixed-width columns
+  # verDefine 12, compilerVersion 10, packageVersion 6, productName (trailing)
+  foreach ($entry in $Data.versions) {
+    Write-Output ("{0,-12}{1,-10}{2,-6}{3}" -f `
+      $entry.verDefine, $entry.compilerVersion, $entry.packageVersion, $entry.productName)
+  }
+}
+
 # Guard: skip top-level execution when the script is dot-sourced for testing.
 # Pester dot-sources the file to import functions; $MyInvocation.InvocationName
 # is '.' in that case. Direct execution always sets it to the script path.
@@ -232,8 +276,8 @@ try {
   # Default behavior: if no action switches specified, treat as -Version.
   # Mutual exclusion and mandatory -Name are enforced by parameter sets.
   $doVersion = $Version
-  if (-not $doVersion -and -not $Resolve) { $doVersion = $true }
-  $commandName = if ($Resolve) { 'resolve' } else { 'version' }
+  if (-not $doVersion -and -not $Resolve -and -not $ListKnown) { $doVersion = $true }
+  $commandName = if ($Resolve) { 'resolve' } elseif ($ListKnown) { 'listKnown' } else { 'version' }
 
   if ([string]::IsNullOrWhiteSpace($DataFile)) {
     $DataFile = Resolve-DefaultDataFilePath -ScriptPath $scriptPath
@@ -271,6 +315,11 @@ try {
       exit 4
     }
     Write-ResolveOutput -Entry $entry -ToolVersion $ToolVersion -Format $Format
+    exit 0
+  }
+
+  if ($ListKnown) {
+    Write-ListKnownOutput -Data $data -ToolVersion $ToolVersion -Format $Format
     exit 0
   }
 
