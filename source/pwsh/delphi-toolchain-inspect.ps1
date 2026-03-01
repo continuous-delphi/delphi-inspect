@@ -43,6 +43,17 @@ param(
   [Parameter(ParameterSetName='ListKnown')]
   [switch]$ListKnown,
 
+  [Parameter(ParameterSetName='DetectInstalled', Mandatory=$true)]
+  [switch]$DetectInstalled,
+
+  [Parameter(ParameterSetName='DetectInstalled', Mandatory=$true)]
+  [ValidateSet('Win32', 'Win64')]
+  [string]$Platform,
+
+  [Parameter(ParameterSetName='DetectInstalled', Mandatory=$true)]
+  [ValidateSet('DCC', 'MSBuild')]
+  [string]$BuildSystem,
+
   [Parameter()]
   [string]$DataFile,
 
@@ -261,6 +272,224 @@ function Write-ListKnownOutput {
   }
 }
 
+function Get-RegistryRootDir {
+  param([string]$RelativePath)
+
+  $subKey = $RelativePath.TrimStart('\')
+
+  foreach ($hive in @([Microsoft.Win32.RegistryHive]::CurrentUser, [Microsoft.Win32.RegistryHive]::LocalMachine)) {
+    $baseKey = $null
+    $regKey  = $null
+    try {
+      $baseKey = [Microsoft.Win32.RegistryKey]::OpenBaseKey($hive, [Microsoft.Win32.RegistryView]::Registry32)
+      $regKey  = $baseKey.OpenSubKey($subKey)
+      if ($null -ne $regKey) {
+        $val = $regKey.GetValue('RootDir')
+        if (-not [string]::IsNullOrWhiteSpace([string]$val)) {
+          return [string]$val
+        }
+      }
+    } finally {
+      if ($null -ne $regKey)  { $regKey.Close()  }
+      if ($null -ne $baseKey) { $baseKey.Close() }
+    }
+  }
+  return $null
+}
+
+function Test-EnvOptionsLibraryPath {
+  param(
+    [string]$Path,
+    [string]$Platform
+  )
+
+  try {
+    [xml]$xml = Get-Content -LiteralPath $Path -Raw -Encoding UTF8
+    $platformPropMap = @{
+      Win32 = 'DelphiLibraryPath'
+      Win64 = 'DelphiLibraryPathWin64'
+    }
+    $propName = $platformPropMap[$Platform]    
+    $nodes     = $xml.SelectNodes("//*[local-name()='$propName']")
+    foreach ($node in $nodes) {
+      if (-not [string]::IsNullOrWhiteSpace($node.InnerText)) {
+        return $true
+      }
+    }
+    return $false
+  } catch {
+    return $false
+  }
+}
+
+function Get-DccReadiness {
+  param(
+    [psobject]$Entry,
+    [string]$Platform
+  )
+
+  $compilerExe = if ($Platform -eq 'Win64') { 'dcc64.exe' } else { 'dcc32.exe' }
+  $cfgFile     = if ($Platform -eq 'Win64') { 'dcc64.cfg' } else { 'dcc32.cfg' }
+
+  $result = [pscustomobject]@{
+    verDefine     = $Entry.verDefine
+    productName   = $Entry.productName
+    readiness     = 'notFound'
+    registryFound = $false
+    rootDirExists = $null
+    compilerFound = $null
+    cfgFound      = $null
+  }
+
+  if ([string]::IsNullOrWhiteSpace($Entry.regKeyRelativePath)) {
+    return $result
+  }
+
+  $rootDir = Get-RegistryRootDir -RelativePath $Entry.regKeyRelativePath
+  if ($null -eq $rootDir) {
+    return $result
+  }
+
+  $binPath = Join-Path $rootDir 'bin'
+  $result.registryFound = $true
+  $result.rootDirExists = Test-Path -LiteralPath $rootDir
+  $result.compilerFound = Test-Path -LiteralPath (Join-Path $binPath $compilerExe)
+  $result.cfgFound      = Test-Path -LiteralPath (Join-Path $binPath $cfgFile)
+
+  if ($result.rootDirExists -and $result.compilerFound -and $result.cfgFound) {
+    $result.readiness = 'ready'
+  } else {
+    $result.readiness = 'partialInstall'
+  }
+
+  return $result
+}
+
+function Get-MSBuildReadiness {
+  param(
+    [psobject]$Entry,
+    [string]$Platform
+  )
+
+  $result = [pscustomobject]@{
+    verDefine                = $Entry.verDefine
+    productName              = $Entry.productName
+    readiness                = 'notFound'
+    registryFound            = $false
+    rootDirExists            = $null
+    rsvarsFound              = $null
+    envOptionsFound          = $null
+    envOptionsHasLibraryPath = $null
+  }
+
+  if ([string]::IsNullOrWhiteSpace($Entry.regKeyRelativePath)) {
+    return $result
+  }
+
+  $rootDir = Get-RegistryRootDir -RelativePath $Entry.regKeyRelativePath
+  if ($null -eq $rootDir) {
+    return $result
+  }
+
+  $binPath    = Join-Path $rootDir 'bin'
+  $bdsVersion = Split-Path -Leaf $Entry.regKeyRelativePath
+  $envOptPath = Join-Path $env:APPDATA 'Embarcadero' 'BDS' $bdsVersion 'EnvOptions.proj'
+
+  $result.registryFound   = $true
+  $result.rootDirExists   = Test-Path -LiteralPath $rootDir
+  $result.rsvarsFound     = Test-Path -LiteralPath (Join-Path $binPath 'rsvars.bat')
+  $result.envOptionsFound = Test-Path -LiteralPath $envOptPath
+
+  if ($result.envOptionsFound) {
+    $result.envOptionsHasLibraryPath = Test-EnvOptionsLibraryPath -Path $envOptPath -Platform $Platform
+  }
+
+  if ($result.rootDirExists -and $result.rsvarsFound -and $result.envOptionsFound -and $result.envOptionsHasLibraryPath) {
+    $result.readiness = 'ready'
+  } else {
+    $result.readiness = 'partialInstall'
+  }
+
+  return $result
+}
+
+function Write-DetectInstalledOutput {
+  param(
+    [object[]]$Installations,
+    [string]$Platform,
+    [string]$BuildSystem,
+    [string]$ToolVersion = '',
+    [string]$Format = 'text'
+  )
+
+  if ($Format -eq 'json') {
+    $items = @($Installations | ForEach-Object {
+      $inst = $_
+      if ($BuildSystem -eq 'DCC') {
+        [pscustomobject]@{
+          verDefine     = $inst.verDefine
+          productName   = $inst.productName
+          readiness     = $inst.readiness
+          registryFound = $inst.registryFound
+          rootDirExists = $inst.rootDirExists
+          compilerFound = $inst.compilerFound
+          cfgFound      = $inst.cfgFound
+        }
+      } else {
+        [pscustomobject]@{
+          verDefine                = $inst.verDefine
+          productName              = $inst.productName
+          readiness                = $inst.readiness
+          registryFound            = $inst.registryFound
+          rootDirExists            = $inst.rootDirExists
+          rsvarsFound              = $inst.rsvarsFound
+          envOptionsFound          = $inst.envOptionsFound
+          envOptionsHasLibraryPath = $inst.envOptionsHasLibraryPath
+        }
+      }
+    })
+    Write-JsonOutput ([pscustomobject]@{
+      ok      = $true
+      command = 'detectInstalled'
+      tool    = [pscustomobject]@{ name = 'delphi-toolchain-inspect'; impl = 'pwsh'; version = $ToolVersion }
+      result  = [pscustomobject]@{
+        platform      = $Platform
+        buildSystem   = $BuildSystem
+        installations = $items
+      }
+    })
+    return
+  }
+
+  # Text format: only show detected installations (readiness != notFound)
+  # @() forces empty array -- Where-Object returns $null under StrictMode when no matches
+  $found = @($Installations | Where-Object { $_.readiness -ne 'notFound' })
+  if ($found.Count -eq 0) {
+    Write-Output 'No installations found'
+    return
+  }
+
+  $firstBlock = $true
+  foreach ($inst in $found) {
+    if (-not $firstBlock) { Write-Output '' }
+    $firstBlock = $false
+
+    Write-Output ("{0,-10} {1}" -f $inst.verDefine, $inst.productName)
+    Write-Output ("  {0,-26}{1}" -f 'readiness', $inst.readiness)
+    Write-Output ("  {0,-26}{1}" -f 'registryFound', $inst.registryFound.ToString().ToLower())
+    Write-Output ("  {0,-26}{1}" -f 'rootDirExists', $inst.rootDirExists.ToString().ToLower())
+    if ($BuildSystem -eq 'DCC') {
+      Write-Output ("  {0,-26}{1}" -f 'compilerFound', $inst.compilerFound.ToString().ToLower())
+      Write-Output ("  {0,-26}{1}" -f 'cfgFound', $inst.cfgFound.ToString().ToLower())
+    } else {
+      Write-Output ("  {0,-26}{1}" -f 'rsvarsFound', $inst.rsvarsFound.ToString().ToLower())
+      Write-Output ("  {0,-26}{1}" -f 'envOptionsFound', $inst.envOptionsFound.ToString().ToLower())
+      $hasLibStr = ($null -ne $inst.envOptionsHasLibraryPath) ? $inst.envOptionsHasLibraryPath.ToString().ToLower() : 'null'
+      Write-Output ("  {0,-26}{1}" -f 'envOptionsHasLibraryPath', $hasLibStr)
+    }
+  }
+}
+
 # Guard: skip top-level execution when the script is dot-sourced for testing.
 # Pester dot-sources the file to import functions; $MyInvocation.InvocationName
 # is '.' in that case. Direct execution always sets it to the script path.
@@ -276,8 +505,8 @@ try {
   # Default behavior: if no action switches specified, treat as -Version.
   # Mutual exclusion and mandatory -Name are enforced by parameter sets.
   $doVersion = $Version
-  if (-not $doVersion -and -not $Resolve -and -not $ListKnown) { $doVersion = $true }
-  $commandName = if ($Resolve) { 'resolve' } elseif ($ListKnown) { 'listKnown' } else { 'version' }
+  if (-not $doVersion -and -not $Resolve -and -not $ListKnown -and -not $DetectInstalled) { $doVersion = $true }
+  $commandName = if ($Resolve) { 'resolve' } elseif ($ListKnown) { 'listKnown' } elseif ($DetectInstalled) { 'detectInstalled' } else { 'version' }
 
   if ([string]::IsNullOrWhiteSpace($DataFile)) {
     $DataFile = Resolve-DefaultDataFilePath -ScriptPath $scriptPath
@@ -320,6 +549,31 @@ try {
 
   if ($ListKnown) {
     Write-ListKnownOutput -Data $data -ToolVersion $ToolVersion -Format $Format
+    exit 0
+  }
+
+  if ($DetectInstalled) {
+    $installations = $null
+    try {
+      $installations = @($data.versions | ForEach-Object {
+        if ($BuildSystem -eq 'DCC') {
+          Get-DccReadiness -Entry $_ -Platform $Platform
+        } else {
+          Get-MSBuildReadiness -Entry $_ -Platform $Platform
+        }
+      })
+    } catch {
+      if ($Format -eq 'json') {
+        Write-JsonError -ToolVersion $ToolVersion -Command 'detectInstalled' -Code 5 -Message "Registry access failed: $($_.Exception.Message)"
+      } else {
+        Write-Error "Registry access failed: $($_.Exception.Message)" -ErrorAction Continue
+      }
+      exit 5
+    }
+    # @() forces empty array -- Where-Object returns $null under StrictMode when no matches
+    $anyFound = @($installations | Where-Object { $_.readiness -ne 'notFound' }).Count -gt 0
+    Write-DetectInstalledOutput -Installations $installations -Platform $Platform -BuildSystem $BuildSystem -ToolVersion $ToolVersion -Format $Format
+    if (-not $anyFound) { exit 6 }
     exit 0
   }
 

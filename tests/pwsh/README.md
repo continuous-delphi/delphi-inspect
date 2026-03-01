@@ -210,6 +210,31 @@ triggering live API calls or file I/O at load time.
 
 Do not remove this guard.
 
+### Pipeline results and Set-StrictMode
+
+Under `Set-StrictMode -Version Latest`, calling `.Count` (or any property)
+on `$null` throws a runtime error.  Pipeline cmdlets such as `Where-Object`,
+`Select-Object`, and `ForEach-Object` return `$null` -- not an empty array --
+when no items match.  This means the following pattern silently breaks under
+strict mode:
+
+```powershell
+# Throws if Where-Object matches nothing: "The property 'Count' cannot
+# be found on this object."
+$n = ($collection | Where-Object { $_.foo -eq 'bar' }).Count
+```
+
+Always wrap pipeline output in `@()` when you need array semantics:
+
+```powershell
+# Safe: @() guarantees an array even when the pipeline is empty
+$n = @($collection | Where-Object { $_.foo -eq 'bar' }).Count
+```
+
+This applies in production code and in test helpers alike.  Any use of
+`.Count`, `.Length`, or indexed access on pipeline output must be guarded
+with `@()`.
+
 ### Encoding
 
 All test files and fixture files must be UTF-8 without BOM.
