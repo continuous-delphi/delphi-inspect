@@ -106,13 +106,13 @@
 
   Context 21 - -DetectInstalled -Platform Win32 -BuildSystem DCC -Format json:
     Exit 6, stdout parses as JSON, ok=true, command=detectInstalled,
-    result.platform=Win32/result.buildSystem=DCC, 3 installations,
+    result.platform=Win32/result.buildSystem=DCC, installations count matches detect fixture,
     VER999 has registryFound=null (notApplicable), VER150/VER370 have registryFound=false.
     Clean stderr.
 
   Context 22 - -DetectInstalled -Platform Win32 -BuildSystem MSBuild -Format json:
     Exit 6, stdout parses as JSON, ok=true, command=detectInstalled,
-    result.buildSystem=MSBuild, 3 installations.  VER150 (DCC-only) is
+    result.buildSystem=MSBuild, installations count matches detect fixture.  VER150 (DCC-only) is
     notApplicable/registryFound=null; VER999 (MSBuild/Win32) is
     notFound/registryFound=false.  Clean stderr.
 
@@ -122,23 +122,29 @@
   Context 24 - -DetectInstalled without -BuildSystem:
     Exit 1 (PowerShell parameter binding rejects the invocation), no stdout, stderr present.
 
-  Known gap -- exit 5 (registry access error) has no integration coverage.
-  Get-RegistryRootDir cannot be mocked across a subprocess boundary, so
-  injecting a registry failure would require a dedicated error-injection
-  wrapper or a custom test shim.  Exit 5 is covered by the inner try/catch
-  in the dispatch block; the relevant unit tests exercise the Get-DccReadiness
-  and Get-MSBuildReadiness error paths directly.
+  Context 25 - registry access failure, text mode (via detect-registry-error-shim.ps1):
+    Exit 5, no stdout, stderr contains "Registry access failed".
+
+  Context 26 - registry access failure, json mode (via detect-registry-error-shim.ps1):
+    Exit 5, stdout parses as JSON, ok=false, error.code=5, error.message matches
+    "Registry access failed".  Clean stderr.
 #>
 
 Describe 'delphi-toolchain-inspect.ps1 (subprocess)' {
 
   BeforeAll {
     . "$PSScriptRoot/TestHelpers.ps1"
-    $script:scriptPath         = Get-ScriptUnderTestPath
+    $script:scriptPath             = Get-ScriptUnderTestPath
     . $script:scriptPath
-    $script:fixturePath        = Get-MinFixturePath
-    $script:resolveFixturePath = Get-ResolveFixturePath
-    $script:detectFixturePath  = Get-DetectFixturePath
+    $script:fixturePath            = Get-MinFixturePath
+    $script:resolveFixturePath     = Get-ResolveFixturePath
+    $script:detectFixturePath      = Get-DetectFixturePath
+    $script:registryErrorShimPath  = Get-RegistryErrorShimPath
+
+    $script:detectFixtureVersionCount  = ((Get-Content -LiteralPath $script:detectFixturePath -Raw |
+        ConvertFrom-Json).versions | Measure-Object).Count
+    $script:resolveFixtureVersionCount = ((Get-Content -LiteralPath $script:resolveFixturePath -Raw |
+        ConvertFrom-Json).versions | Measure-Object).Count
 
     $script:badJsonPath = Join-Path ([System.IO.Path]::GetTempPath()) 'delphi-toolchain-inspect-integration-bad.json'
     Set-Content -LiteralPath $script:badJsonPath -Value '{ bad json' -Encoding UTF8NoBOM
@@ -616,8 +622,8 @@ Describe 'delphi-toolchain-inspect.ps1 (subprocess)' {
       $script:run.ExitCode | Should -Be $ExitSuccess
     }
 
-    It 'stdout has exactly 2 lines (one per dataset entry)' {
-      $script:run.StdOut | Should -HaveCount 2
+    It 'stdout has exactly one line per dataset entry' {
+      $script:run.StdOut | Should -HaveCount $script:resolveFixtureVersionCount
     }
 
     It 'stdout includes an entry line for VER150' {
@@ -716,10 +722,8 @@ Describe 'delphi-toolchain-inspect.ps1 (subprocess)' {
       $script:json.result.buildSystem | Should -Be 'DCC'
     }
 
-    It 'JSON result.installations has 3 entries (one per detect fixture entry)' {
-      # Count is tied to delphi-compiler-versions.detect.json (3 entries).
-      # Update this assertion if the fixture grows.
-      $script:json.result.installations | Should -HaveCount 3
+    It 'JSON result.installations has one entry per detect fixture entry' {
+      $script:json.result.installations | Should -HaveCount $script:detectFixtureVersionCount
     }
 
     It 'VER999 (MSBuild-only) entry has readiness=notApplicable and registryFound=null' {
@@ -768,10 +772,8 @@ Describe 'delphi-toolchain-inspect.ps1 (subprocess)' {
       $script:json.result.buildSystem | Should -Be 'MSBuild'
     }
 
-    It 'JSON result.installations has 3 entries (one per detect fixture entry)' {
-      # Count is tied to delphi-compiler-versions.detect.json (3 entries).
-      # Update this assertion if the fixture grows.
-      $script:json.result.installations | Should -HaveCount 3
+    It 'JSON result.installations has one entry per detect fixture entry' {
+      $script:json.result.installations | Should -HaveCount $script:detectFixtureVersionCount
     }
 
     It 'VER150 (DCC-only) entry has readiness=notApplicable and registryFound=null' {
@@ -856,6 +858,62 @@ Describe 'delphi-toolchain-inspect.ps1 (subprocess)' {
 
     It 'emits stderr' {
       $script:run.StdErr | Should -Not -BeNullOrEmpty
+    }
+
+  }
+
+  Context 'Given a registry access failure in text mode (shim)' {
+
+    BeforeAll {
+      $script:run = Invoke-ToolProcess -ScriptPath $script:registryErrorShimPath `
+                                       -Arguments @('-DataFile', $script:detectFixturePath, '-Platform', 'Win32', '-BuildSystem', 'DCC')
+    }
+
+    It 'exits with code 5 (registry error)' {
+      $script:run.ExitCode | Should -Be $ExitRegistryError
+    }
+
+    It 'produces no stdout' {
+      $script:run.StdOut | Should -BeNullOrEmpty
+    }
+
+    It 'emits at least one stderr line containing "Registry access failed"' {
+      $script:run.StdErr | Should -Not -BeNullOrEmpty
+      ($script:run.StdErr -join "`n") | Should -Match 'Registry access failed'
+    }
+
+  }
+
+  Context 'Given a registry access failure in json mode (shim)' {
+
+    BeforeAll {
+      $script:run  = Invoke-ToolProcess -ScriptPath $script:registryErrorShimPath `
+                                        -Arguments @('-DataFile', $script:detectFixturePath, '-Platform', 'Win32', '-BuildSystem', 'DCC', '-Format', 'json')
+      $script:json = ($script:run.StdOut -join "`n") | ConvertFrom-Json
+    }
+
+    It 'exits with code 5 (registry error)' {
+      $script:run.ExitCode | Should -Be $ExitRegistryError
+    }
+
+    It 'stdout parses as valid JSON' {
+      { ($script:run.StdOut -join "`n") | ConvertFrom-Json } | Should -Not -Throw
+    }
+
+    It 'JSON ok is false' {
+      $script:json.ok | Should -Be $false
+    }
+
+    It 'JSON error.code is 5' {
+      $script:json.error.code | Should -Be $ExitRegistryError
+    }
+
+    It 'JSON error.message contains "Registry access failed"' {
+      $script:json.error.message | Should -Match 'Registry access failed'
+    }
+
+    It 'produces no stderr' {
+      $script:run.StdErr | Should -BeNullOrEmpty
     }
 
   }

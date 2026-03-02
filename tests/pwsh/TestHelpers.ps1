@@ -4,18 +4,12 @@
 # Dot-source this file at the top of each *.Tests.ps1:
 #   . "$PSScriptRoot/TestHelpers.ps1"
 #
-# Provides (discovery scope -- usable at top level of test files):
-#   $ScriptUnderTest    - absolute path to delphi-toolchain-inspect.ps1
-#   $FixturesDir        - absolute path to tests/pwsh/fixtures/
-#   $MinFixturePath     - absolute path to the minimal valid fixture JSON
-#   $ResolveFixturePath - absolute path to the resolve fixture JSON
-#   $DetectFixturePath  - absolute path to the detect fixture JSON
-#
 # Provides (run scope -- usable inside BeforeAll / It blocks):
 #   Get-ScriptUnderTestPath    - returns absolute path to delphi-toolchain-inspect.ps1
 #   Get-MinFixturePath         - returns absolute path to the minimal fixture JSON
 #   Get-ResolveFixturePath     - returns absolute path to the resolve fixture JSON
 #   Get-DetectFixturePath      - returns absolute path to the detect fixture JSON
+#   Get-RegistryErrorShimPath  - returns absolute path to detect-registry-error-shim.ps1
 #   Invoke-ToolProcess         - runs delphi-toolchain-inspect.ps1 as a child process and
 #                                returns [pscustomobject]@{ ExitCode; StdOut; StdErr }
 #
@@ -38,15 +32,6 @@
 #   That dot-source must happen in the test file's own BeforeAll so that
 #   the loaded functions land in the correct scope for It blocks.
 
-$here               = $PSScriptRoot
-$FixturesDir        = Join-Path $here 'fixtures'
-$MinFixturePath     = Join-Path $FixturesDir 'delphi-compiler-versions.min.json'
-$ResolveFixturePath = Join-Path $FixturesDir 'delphi-compiler-versions.resolve.json'
-$DetectFixturePath  = Join-Path $FixturesDir 'delphi-compiler-versions.detect.json'
-
-$ScriptUnderTest = Join-Path $here '..' '..' 'source' 'pwsh' 'delphi-toolchain-inspect.ps1'
-$ScriptUnderTest = [System.IO.Path]::GetFullPath($ScriptUnderTest)
-
 function Get-ScriptUnderTestPath {
   $path = Join-Path $PSScriptRoot '..' '..' 'source' 'pwsh' 'delphi-toolchain-inspect.ps1'
   return [System.IO.Path]::GetFullPath($path)
@@ -64,6 +49,11 @@ function Get-ResolveFixturePath {
 
 function Get-DetectFixturePath {
   $path = Join-Path $PSScriptRoot 'fixtures' 'delphi-compiler-versions.detect.json'
+  return [System.IO.Path]::GetFullPath($path)
+}
+
+function Get-RegistryErrorShimPath {
+  $path = Join-Path $PSScriptRoot 'fixtures' 'detect-registry-error-shim.ps1'
   return [System.IO.Path]::GetFullPath($path)
 }
 
@@ -86,15 +76,11 @@ function Invoke-ToolProcess {
   $p.StartInfo = $psi
   [void]$p.Start()
 
-  # NOTE: sequential ReadToEnd calls carry a known deadlock risk -- if the child
-  # fills the stderr pipe buffer before stdout is fully consumed (or vice versa),
-  # both processes block waiting for the other side to drain.  This tool produces
-  # only a few lines of output so the buffers will not fill in practice, but if
-  # output volume grows the reads should be moved to concurrent async jobs or
-  # background threads.  See: https://learn.microsoft.com/dotnet/api/system.diagnostics.process.standardoutput#remarks
-  $stdout = $p.StandardOutput.ReadToEnd()
-  $stderr = $p.StandardError.ReadToEnd()
+  $stdoutTask = $p.StandardOutput.ReadToEndAsync()
+  $stderrTask = $p.StandardError.ReadToEndAsync()
   $p.WaitForExit()
+  $stdout = $stdoutTask.GetAwaiter().GetResult()
+  $stderr = $stderrTask.GetAwaiter().GetResult()
 
   [pscustomobject]@{
     ExitCode = $p.ExitCode

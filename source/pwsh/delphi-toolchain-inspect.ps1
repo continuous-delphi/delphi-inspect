@@ -80,6 +80,10 @@ $ExitNoInstallationsFound = 6   # -DetectInstalled: no ready/partial entries
 function Resolve-DefaultDataFilePath {
   param([string]$ScriptPath)
 
+  if ([string]::IsNullOrWhiteSpace($ScriptPath) -or -not (Test-Path -LiteralPath $ScriptPath)) {
+    throw "Resolve-DefaultDataFilePath: ScriptPath is missing or does not exist: '$ScriptPath'"
+  }
+
   $scriptDir = Split-Path -Parent $ScriptPath
 
   # Prefer the submodule layout:
@@ -101,7 +105,7 @@ function Import-JsonData {
   }
 
   # Use -Raw to avoid array-of-lines behavior
-  $text = Get-Content -LiteralPath $Path -Raw -Encoding UTF8
+  $text = Get-Content -LiteralPath $Path -Raw -Encoding UTF8NoBOM
   try {
     return $text | ConvertFrom-Json
   } catch {
@@ -235,7 +239,7 @@ function Write-ResolveOutput {
   if (-not [string]::IsNullOrWhiteSpace($Entry.regKeyRelativePath)) {
     Write-Output ("regKeyRelativePath  {0}" -f $Entry.regKeyRelativePath)
   }
-  if ($Entry.aliases -and $Entry.aliases.Count -gt 0) {
+  if ($null -ne $Entry.aliases -and $Entry.aliases.Count -gt 0) {
     Write-Output ("aliases             {0}" -f ($Entry.aliases -join ', '))
   }
 }
@@ -313,7 +317,7 @@ function Test-EnvOptionsLibraryPath {
   )
 
   try {
-    [xml]$xml = Get-Content -LiteralPath $Path -Raw -Encoding UTF8
+    [xml]$xml = Get-Content -LiteralPath $Path -Raw -Encoding UTF8NoBOM
     $platformPropMap = @{
       Win32 = 'DelphiLibraryPath'
       Win64 = 'DelphiLibraryPathWin64'
@@ -348,6 +352,12 @@ function Get-DccReadiness {
     rootDirExists = $null
     compilerFound = $null
     cfgFound      = $null
+  }
+
+  if ($null -eq $Entry.supportedBuildSystems -or $null -eq $Entry.supportedPlatforms) {
+    Write-Warning "Entry '$($Entry.verDefine)' is missing supportedBuildSystems or supportedPlatforms -- treating as notApplicable"
+    $result.readiness = 'notApplicable'
+    return $result
   }
 
   if ('DCC' -notin $Entry.supportedBuildSystems -or $Platform -notin $Entry.supportedPlatforms) {
@@ -396,6 +406,12 @@ function Get-MSBuildReadiness {
     rsvarsFound              = $null
     envOptionsFound          = $null
     envOptionsHasLibraryPath = $null
+  }
+
+  if ($null -eq $Entry.supportedBuildSystems -or $null -eq $Entry.supportedPlatforms) {
+    Write-Warning "Entry '$($Entry.verDefine)' is missing supportedBuildSystems or supportedPlatforms -- treating as notApplicable"
+    $result.readiness = 'notApplicable'
+    return $result
   }
 
   if ('MSBuild' -notin $Entry.supportedBuildSystems -or $Platform -notin $Entry.supportedPlatforms) {
