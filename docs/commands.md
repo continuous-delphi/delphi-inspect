@@ -153,10 +153,40 @@ List all known Delphi versions from the dataset.
 One line per entry in fixed-width columns: verDefine (12), compilerVersion (10),
 packageVersion (6), productName (trailing).
 
-    VER150      15.0      70    Delphi 7
-    VER370      37.0      370   Delphi 13 Florence
+```text
+VER90       9.0       20    Delphi 2
+VER100      10.0      30    Delphi 3
+VER120      12.0      40    Delphi 4
+VER130      13.0      50    Delphi 5
+VER140      14.0      60    Delphi 6
+VER150      15.0      70    Delphi 7
+VER170      17.0      90    Delphi 2005
+VER180      18.0      100   Delphi 2006
+VER185      18.5      110   Delphi 2007
+VER200      20.0      120   Delphi 2009
+VER210      21.0      140   Delphi 2010
+VER220      22.0      150   Delphi XE
+VER230      23.0      160   Delphi XE2
+VER240      24.0      170   Delphi XE3
+VER250      25.0      180   Delphi XE4
+VER260      26.0      190   Delphi XE5
+VER270      27.0      200   Delphi XE6
+VER280      28.0      210   Delphi XE7
+VER290      29.0      220   Delphi XE8
+VER300      30.0      230   Delphi 10 Seattle
+VER310      31.0      240   Delphi 10.1 Berlin
+VER320      32.0      250   Delphi 10.2 Tokyo
+VER330      33.0      260   Delphi 10.3 Rio
+VER340      34.0      270   Delphi 10.4 Sydney
+VER350      35.0      280   Delphi 11 Alexandria
+VER360      36.0      290   Delphi 12 Athens
+VER370      37.0      370   Delphi 13 Florence
+```
 
 ### Output (json format)
+_Only one entry shown in the example for brevity...
+will actually have a `versions` entry for every item in the dataset_
+
 
     {
       "ok": true,
@@ -184,9 +214,7 @@ packageVersion (6), productName (trailing).
       }
     }
 
-`generatedUtcDate` is always present in JSON output; it is `null` when absent
-from the dataset.  All version entry fields are always present regardless of
-null status.
+All version entry fields are always present regardless of null status.
 
 ------------------------------------------------------------------------
 
