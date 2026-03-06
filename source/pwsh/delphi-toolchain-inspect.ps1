@@ -229,7 +229,7 @@ function Write-ResolveOutput {
     return
   }
 
-  # Label column is 20 chars wide to accommodate 'regKeyRelativePath' 
+  # Label column is 20 chars wide to accommodate 'regKeyRelativePath'
   Write-Output ("verDefine           {0}" -f $Entry.verDefine)
   Write-Output ("productName         {0}" -f $Entry.productName)
   Write-Output ("compilerVersion     {0}" -f $Entry.compilerVersion)
@@ -322,7 +322,7 @@ function Test-EnvOptionsLibraryPath {
       Win32 = 'DelphiLibraryPath'
       Win64 = 'DelphiLibraryPathWin64'
     }
-    $propName = $platformPropMap[$Platform]    
+    $propName = $platformPropMap[$Platform]
     $nodes     = $xml.SelectNodes("//*[local-name()='$propName']")
     foreach ($node in $nodes) {
       if (-not [string]::IsNullOrWhiteSpace($node.InnerText)) {
@@ -576,9 +576,9 @@ try {
     $entry = Resolve-VersionEntry -Name $Name -Data $data
     if ($null -eq $entry) {
       if ($Format -eq 'json') {
-        Write-JsonError -ToolVersion $ToolVersion -Command 'resolve' -Code $ExitAliasNotFound -Message "Alias not found: $Name"
+        Write-JsonError -ToolVersion $ToolVersion -Command 'resolve' -Code $ExitAliasNotFound -Message "Name not found: $Name"
       } else {
-        Write-Error "Alias not found: $Name" -ErrorAction Continue
+        Write-Error "Name not found: $Name" -ErrorAction Continue
       }
       exit $ExitAliasNotFound
     }

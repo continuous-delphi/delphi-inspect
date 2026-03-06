@@ -78,7 +78,7 @@ if ($Readiness -eq 'partialInstall') {
 }
 
 # ready: rsvars.bat + EnvOptions.proj with DelphiLibraryPath
-Set-Content -Path $RsvarsPath -Value '@REM rsvars stub for test' -Encoding UTF8
+Set-Content -Path $RsvarsPath -Value '@REM rsvars stub for test' -Encoding UTF8NoBOM
 Write-Host "  Created: $RsvarsPath"
 
 New-Item -ItemType Directory -Path $EnvOptDir -Force | Out-Null
@@ -88,7 +88,7 @@ New-Item -ItemType Directory -Path $EnvOptDir -Force | Out-Null
     <DelphiLibraryPath>$RootDir\lib\win32\release</DelphiLibraryPath>
   </PropertyGroup>
 </Project>
-"@ | Set-Content -Path $EnvOptPath -Encoding UTF8
+"@ | Set-Content -Path $EnvOptPath -Encoding UTF8NoBOM
 Write-Host "  Created: $EnvOptPath"
 
 Write-Host 'Done. (ready -- all MSBuild Win32 components present)'
