@@ -325,7 +325,8 @@ When `-BuildSystem MSBuild` is specified, the following are assessed:
 |----------------------------|----------------------------------------------------|
 | `registryFound`            | Registry key exists for this version               |
 | `rootDirExists`            | `RootDir` registry value resolves to existing path |
-| `rsvarsFound`              | `rsvars.bat` exists under `<RootDir>\bin`          |
+| `rsvarsPath`               | Full path to `rsvars.bat` under `<RootDir>\bin`    |
+| `rsvarsFound`              | `rsvars.bat` exists at `rsvarsPath`                |
 | `envOptionsFound`          | `EnvOptions.proj` exists at the expected path      |
 | `envOptionsHasLibraryPath` | `EnvOptions.proj` contains at least one non-empty  |
 |                            | `DelphiLibraryPath` property for the target platform|
@@ -433,8 +434,9 @@ the requested platform or build system combination.
       }
     }
 
-For MSBuild, the component fields are `registryFound`, `rootDirExists`,
-`rsvarsFound`, `envOptionsFound`, and `envOptionsHasLibraryPath`.
+For MSBuild, the component fields are `registryFound`, `rootDir`,
+`rsvarsPath`, `rootDirExists`, `rsvarsFound`, `envOptionsFound`, and
+`envOptionsHasLibraryPath`.
 The `readiness` field is always present regardless of build system.
 
 `platform` and `buildSystem` are always echoed back in the result so
@@ -480,7 +482,7 @@ a description of the `DCC` and `MSBuild` readiness criteria.
 
 ### Output (text format, default)
 
-When a ready installation is found, one block is emitted:
+When a ready installation is found, one block is emitted.  DCC example:
 
     VER360     Delphi 12 Athens
       readiness                 ready
@@ -489,6 +491,18 @@ When a ready installation is found, one block is emitted:
       rootDirExists             true
       compilerFound             true
       cfgFound                  true
+
+MSBuild example:
+
+    VER360     Delphi 12 Athens
+      readiness                 ready
+      registryFound             true
+      rootDir                   C:\Program Files (x86)\Embarcadero\Studio\23.0\
+      rootDirExists             true
+      rsvarsPath                C:\Program Files (x86)\Embarcadero\Studio\23.0\bin\rsvars.bat
+      rsvarsFound               true
+      envOptionsFound           true
+      envOptionsHasLibraryPath  true
 
 When no ready installation is found (exit 6):
 
@@ -537,7 +551,7 @@ and the envelope is still well-formed (`ok: true`):
     }
 
 For MSBuild, the component fields inside `installation` are
-`registryFound`, `rootDir`, `rootDirExists`, `rsvarsFound`,
+`registryFound`, `rootDir`, `rsvarsPath`, `rootDirExists`, `rsvarsFound`,
 `envOptionsFound`, and `envOptionsHasLibraryPath`.
 
 `platform` and `buildSystem` are always echoed back in the result.
