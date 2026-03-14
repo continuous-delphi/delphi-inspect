@@ -15,6 +15,8 @@ USAGE
   pwsh ./source/delphi-toolchain-inspect.ps1 -Resolve <alias>
   pwsh ./source/delphi-toolchain-inspect.ps1 -Resolve -Name <alias> -Format json
   pwsh ./source/delphi-toolchain-inspect.ps1 -DataFile <path>
+  pwsh ./source/delphi-toolchain-inspect.ps1 -DetectLatest -Platform Win32 -BuildSystem DCC
+  pwsh ./source/delphi-toolchain-inspect.ps1 -DetectLatest -Platform Win32 -BuildSystem DCC -Format json
 
 NOTES
   Default behavior is equivalent to -Version.
@@ -22,6 +24,10 @@ NOTES
 
   -Resolve looks up an alias or VER### string in the dataset (case-insensitive)
   and prints the canonical entry fields.  Exit 4 when the alias is not found.
+
+  -DetectLatest scans all dataset entries and returns the single highest-versioned
+  entry whose readiness is 'ready' for the specified platform and build system.
+  Exit 0 on success; exit 6 when no ready installation exists.
 
   -Format selects output format: text (default, human-readable) or json
   (machine envelope with ok/command/tool/result structure).  Error envelopes
@@ -46,11 +52,16 @@ param(
   [Parameter(ParameterSetName='ListInstalled', Mandatory=$true)]
   [switch]$ListInstalled,
 
+  [Parameter(ParameterSetName='DetectLatest', Mandatory=$true)]
+  [switch]$DetectLatest,
+
   [Parameter(ParameterSetName='ListInstalled', Mandatory=$true)]
+  [Parameter(ParameterSetName='DetectLatest', Mandatory=$true)]
   [ValidateSet('Win32', 'Win64')]
   [string]$Platform,
 
   [Parameter(ParameterSetName='ListInstalled', Mandatory=$true)]
+  [Parameter(ParameterSetName='DetectLatest', Mandatory=$true)]
   [ValidateSet('DCC', 'MSBuild')]
   [string]$BuildSystem,
 
@@ -529,6 +540,74 @@ function Write-ListInstalledOutput {
   }
 }
 
+function Write-DetectLatestOutput {
+  param(
+    [object]$Installation,
+    [string]$Platform,
+    [string]$BuildSystem,
+    [string]$ToolVersion = '',
+    [string]$Format = 'text'
+  )
+
+  if ($Format -eq 'json') {
+    $instObj = $null
+    if ($null -ne $Installation) {
+      if ($BuildSystem -eq 'DCC') {
+        $instObj = [pscustomobject]@{
+          verDefine     = $Installation.verDefine
+          productName   = $Installation.productName
+          readiness     = $Installation.readiness
+          registryFound = $Installation.registryFound
+          rootDirExists = $Installation.rootDirExists
+          compilerFound = $Installation.compilerFound
+          cfgFound      = $Installation.cfgFound
+        }
+      } else {
+        $instObj = [pscustomobject]@{
+          verDefine                = $Installation.verDefine
+          productName              = $Installation.productName
+          readiness                = $Installation.readiness
+          registryFound            = $Installation.registryFound
+          rootDirExists            = $Installation.rootDirExists
+          rsvarsFound              = $Installation.rsvarsFound
+          envOptionsFound          = $Installation.envOptionsFound
+          envOptionsHasLibraryPath = $Installation.envOptionsHasLibraryPath
+        }
+      }
+    }
+    Write-JsonOutput ([pscustomobject]@{
+      ok      = $true
+      command = 'detectLatest'
+      tool    = [pscustomobject]@{ name = 'delphi-toolchain-inspect'; impl = 'pwsh'; version = $ToolVersion }
+      result  = [pscustomobject]@{
+        platform     = $Platform
+        buildSystem  = $BuildSystem
+        installation = $instObj
+      }
+    })
+    return
+  }
+
+  if ($null -eq $Installation) {
+    Write-Output 'No ready installation found'
+    return
+  }
+
+  Write-Output ("{0,-10} {1}" -f $Installation.verDefine, $Installation.productName)
+  Write-Output ("  {0,-26}{1}" -f 'readiness', $Installation.readiness)
+  Write-Output ("  {0,-26}{1}" -f 'registryFound', $Installation.registryFound.ToString().ToLower())
+  Write-Output ("  {0,-26}{1}" -f 'rootDirExists', $Installation.rootDirExists.ToString().ToLower())
+  if ($BuildSystem -eq 'DCC') {
+    Write-Output ("  {0,-26}{1}" -f 'compilerFound', $Installation.compilerFound.ToString().ToLower())
+    Write-Output ("  {0,-26}{1}" -f 'cfgFound', $Installation.cfgFound.ToString().ToLower())
+  } else {
+    Write-Output ("  {0,-26}{1}" -f 'rsvarsFound', $Installation.rsvarsFound.ToString().ToLower())
+    Write-Output ("  {0,-26}{1}" -f 'envOptionsFound', $Installation.envOptionsFound.ToString().ToLower())
+    $hasLibStr = if ($null -ne $Installation.envOptionsHasLibraryPath) { $Installation.envOptionsHasLibraryPath.ToString().ToLower() } else { 'null' }
+    Write-Output ("  {0,-26}{1}" -f 'envOptionsHasLibraryPath', $hasLibStr)
+  }
+}
+
 # Guard: skip top-level execution when the script is dot-sourced for testing.
 # Pester dot-sources the file to import functions; $MyInvocation.InvocationName
 # is '.' in that case. Direct execution always sets it to the script path.
@@ -544,8 +623,8 @@ try {
   # Default behavior: if no action switches specified, treat as -Version.
   # Mutual exclusion and mandatory -Name are enforced by parameter sets.
   $doVersion = $Version
-  if (-not $doVersion -and -not $Resolve -and -not $ListKnown -and -not $ListInstalled) { $doVersion = $true }
-  $commandName = if ($Resolve) { 'resolve' } elseif ($ListKnown) { 'listKnown' } elseif ($ListInstalled) { 'listInstalled' } else { 'version' }
+  if (-not $doVersion -and -not $Resolve -and -not $ListKnown -and -not $ListInstalled -and -not $DetectLatest) { $doVersion = $true }
+  $commandName = if ($Resolve) { 'resolve' } elseif ($ListKnown) { 'listKnown' } elseif ($ListInstalled) { 'listInstalled' } elseif ($DetectLatest) { 'detectLatest' } else { 'version' }
 
   if ([string]::IsNullOrWhiteSpace($DataFile)) {
     $DataFile = Resolve-DefaultDataFilePath -ScriptPath $scriptPath
@@ -613,6 +692,32 @@ try {
     $anyFound = @($installations | Where-Object { $_.readiness -in @('ready', 'partialInstall') }).Count -gt 0
     Write-ListInstalledOutput -Installations $installations -Platform $Platform -BuildSystem $BuildSystem -ToolVersion $ToolVersion -Format $Format
     if (-not $anyFound) { exit $ExitNoInstallationsFound }
+    exit $ExitSuccess
+  }
+
+  if ($DetectLatest) {
+    $installations = $null
+    try {
+      $installations = @($data.versions | ForEach-Object {
+        if ($BuildSystem -eq 'DCC') {
+          Get-DccReadiness -Entry $_ -Platform $Platform
+        } else {
+          Get-MSBuildReadiness -Entry $_ -Platform $Platform
+        }
+      })
+    } catch {
+      if ($Format -eq 'json') {
+        Write-JsonError -ToolVersion $ToolVersion -Command 'detectLatest' -Code $ExitRegistryError -Message "Registry access failed: $($_.Exception.Message)"
+      } else {
+        Write-Error "Registry access failed: $($_.Exception.Message)" -ErrorAction Continue
+      }
+      exit $ExitRegistryError
+    }
+    # @() forces empty array -- Where-Object returns $null under StrictMode when no matches
+    $readyEntries = @($installations | Where-Object { $_.readiness -eq 'ready' })
+    $latest = if ($readyEntries.Count -gt 0) { $readyEntries[-1] } else { $null }
+    Write-DetectLatestOutput -Installation $latest -Platform $Platform -BuildSystem $BuildSystem -ToolVersion $ToolVersion -Format $Format
+    if ($null -eq $latest) { exit $ExitNoInstallationsFound }
     exit $ExitSuccess
   }
 

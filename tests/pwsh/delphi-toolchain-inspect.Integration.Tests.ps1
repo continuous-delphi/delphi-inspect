@@ -128,6 +128,24 @@
   Context 26 - registry access failure, json mode (via detect-registry-error-shim.ps1):
     Exit 5, stdout parses as JSON, ok=false, error.code=5, error.message matches
     "Registry access failed".  Clean stderr.
+
+  Contexts 27-30 cover the -DetectLatest dispatch branch.  All supply -DataFile
+  explicitly using the listInstalled fixture.  The test machine has no Delphi
+  installed so all registry checks return notFound; DetectLatest exits 6.
+
+  Context 27 - -DetectLatest -Platform Win32 -BuildSystem DCC (text mode):
+    Exit 6, stdout is "No ready installation found", clean stderr.
+
+  Context 28 - -DetectLatest -Platform Win32 -BuildSystem DCC -Format json:
+    Exit 6, stdout parses as JSON, ok=true, command=detectLatest,
+    result.platform=Win32/result.buildSystem=DCC, result.installation=null.
+    Clean stderr.
+
+  Context 29 - -DetectLatest without -Platform:
+    Exit 1 (PowerShell parameter binding rejects the invocation), no stdout, stderr present.
+
+  Context 30 - -DetectLatest without -BuildSystem:
+    Exit 1 (PowerShell parameter binding rejects the invocation), no stdout, stderr present.
 #>
 
 Describe 'delphi-toolchain-inspect.ps1 (subprocess)' {
@@ -845,6 +863,112 @@ Describe 'delphi-toolchain-inspect.ps1 (subprocess)' {
     BeforeAll {
       $script:run = Invoke-ToolProcess -ScriptPath $script:scriptPath `
                                        -Arguments @('-Version', '-Format', 'yaml', '-DataFile', $script:fixturePath)
+    }
+
+    It 'exits with code 1 (PowerShell parameter binding failure)' {
+      $script:run.ExitCode | Should -Be 1
+    }
+
+    It 'produces no stdout' {
+      $script:run.StdOut | Should -BeNullOrEmpty
+    }
+
+    It 'emits stderr' {
+      $script:run.StdErr | Should -Not -BeNullOrEmpty
+    }
+
+  }
+
+  Context 'Given -DetectLatest -Platform Win32 -BuildSystem DCC (text mode, no installations)' {
+
+    BeforeAll {
+      $script:run = Invoke-ToolProcess -ScriptPath $script:scriptPath `
+                                       -Arguments @('-DetectLatest', '-Platform', 'Win32', '-BuildSystem', 'DCC', '-DataFile', $script:listInstalledFixturePath)
+    }
+
+    It 'exits with code 6 (no ready installation found)' {
+      $script:run.ExitCode | Should -Be 6
+    }
+
+    It 'stdout has exactly one line' {
+      $script:run.StdOut | Should -HaveCount 1
+    }
+
+    It 'stdout line is "No ready installation found"' {
+      $script:run.StdOut | Should -Be 'No ready installation found'
+    }
+
+    It 'produces no stderr' {
+      $script:run.StdErr | Should -BeNullOrEmpty
+    }
+
+  }
+
+  Context 'Given -DetectLatest -Platform Win32 -BuildSystem DCC -Format json (no installations)' {
+
+    BeforeAll {
+      $script:run  = Invoke-ToolProcess -ScriptPath $script:scriptPath `
+                                        -Arguments @('-DetectLatest', '-Platform', 'Win32', '-BuildSystem', 'DCC', '-Format', 'json', '-DataFile', $script:listInstalledFixturePath)
+      $script:json = ($script:run.StdOut -join "`n") | ConvertFrom-Json
+    }
+
+    It 'exits with code 6' {
+      $script:run.ExitCode | Should -Be 6
+    }
+
+    It 'stdout parses as valid JSON' {
+      { ($script:run.StdOut -join "`n") | ConvertFrom-Json } | Should -Not -Throw
+    }
+
+    It 'JSON ok is true and command is detectLatest' {
+      $script:json.ok      | Should -Be $true
+      $script:json.command | Should -Be 'detectLatest'
+    }
+
+    It 'JSON result.platform is Win32' {
+      $script:json.result.platform | Should -Be 'Win32'
+    }
+
+    It 'JSON result.buildSystem is DCC' {
+      $script:json.result.buildSystem | Should -Be 'DCC'
+    }
+
+    It 'JSON result.installation is null' {
+      $script:json.result.installation | Should -BeNull
+    }
+
+    It 'produces no stderr' {
+      $script:run.StdErr | Should -BeNullOrEmpty
+    }
+
+  }
+
+  Context 'Given -DetectLatest without -Platform' {
+
+    BeforeAll {
+      $script:run = Invoke-ToolProcess -ScriptPath $script:scriptPath `
+                                       -Arguments @('-DetectLatest', '-BuildSystem', 'DCC', '-DataFile', $script:listInstalledFixturePath)
+    }
+
+    It 'exits with code 1 (PowerShell parameter binding failure)' {
+      $script:run.ExitCode | Should -Be 1
+    }
+
+    It 'produces no stdout' {
+      $script:run.StdOut | Should -BeNullOrEmpty
+    }
+
+    It 'emits stderr' {
+      $script:run.StdErr | Should -Not -BeNullOrEmpty
+    }
+
+  }
+
+  Context 'Given -DetectLatest without -BuildSystem' {
+
+    BeforeAll {
+      $script:run = Invoke-ToolProcess -ScriptPath $script:scriptPath `
+                                       -Arguments @('-DetectLatest', '-Platform', 'Win32', '-DataFile', $script:listInstalledFixturePath)
     }
 
     It 'exits with code 1 (PowerShell parameter binding failure)' {
