@@ -1,13 +1,13 @@
 # Command Reference
 
 This document describes the command-line interface for
-`delphi-toolchain-inspect.ps1`.
+`delphi-inspect.ps1`.
 
 ------------------------------------------------------------------------
 
 # Overview
 
-`delphi-toolchain-inspect.ps1` provides five primary actions:
+`delphi-inspect.ps1` provides five primary actions:
 
 -   `-Version` --- Display tool and dataset metadata
 -   `-Resolve` --- Resolve a Delphi alias or VER### constant to
@@ -23,7 +23,7 @@ By default, invoking the script with **no switches** performs the
 
 # Usage
 
-    pwsh ./source/pwsh/delphi-toolchain-inspect.ps1 [action] [options]
+    pwsh ./source/pwsh/delphi-inspect.ps1 [action] [options]
 
 ------------------------------------------------------------------------
 
@@ -35,10 +35,10 @@ Display tool version and dataset metadata.
 
 ### Examples
 
-    pwsh delphi-toolchain-inspect.ps1
-    pwsh delphi-toolchain-inspect.ps1 -Version
-    pwsh delphi-toolchain-inspect.ps1 -Version -Format json
-    $v = pwsh delphi-toolchain-inspect.ps1 -Version
+    pwsh delphi-inspect.ps1
+    pwsh delphi-inspect.ps1 -Version
+    pwsh delphi-inspect.ps1 -Version -Format json
+    $v = pwsh delphi-inspect.ps1 -Version
 
 ### Output (object format, default)
 
@@ -55,7 +55,7 @@ already knows which script they invoked.
 
 Labels are left-padded to a fixed column width.
 
-    delphi-toolchain-inspect 0.1.0
+    delphi-inspect 0.1.0
     dataVersion     0.1.0
     schemaVersion   1.0.0
     generated       2026-01-01
@@ -67,7 +67,7 @@ Labels are left-padded to a fixed column width.
       "ok": true,
       "command": "version",
       "tool": {
-        "name": "delphi-toolchain-inspect",
+        "name": "delphi-inspect",
         "impl": "pwsh",
         "version": "0.1.0"
       },
@@ -102,10 +102,10 @@ wins.
 
 ### Examples
 
-    pwsh delphi-toolchain-inspect.ps1 -Resolve D7
-    pwsh delphi-toolchain-inspect.ps1 -Resolve "Delphi 11"
-    pwsh delphi-toolchain-inspect.ps1 -Resolve -Name VER150
-    pwsh delphi-toolchain-inspect.ps1 -Resolve VER350 -Format json
+    pwsh delphi-inspect.ps1 -Resolve D7
+    pwsh delphi-inspect.ps1 -Resolve "Delphi 11"
+    pwsh delphi-inspect.ps1 -Resolve -Name VER150
+    pwsh delphi-inspect.ps1 -Resolve VER350 -Format json
 
 ### Output (object format, default)
 
@@ -136,7 +136,7 @@ being omitted.
       "ok": true,
       "command": "resolve",
       "tool": {
-        "name": "delphi-toolchain-inspect",
+        "name": "delphi-inspect",
         "impl": "pwsh",
         "version": "0.1.0"
       },
@@ -158,9 +158,9 @@ List all known Delphi versions from the dataset.
 
 ### Examples
 
-    pwsh delphi-toolchain-inspect.ps1 -ListKnown
-    pwsh delphi-toolchain-inspect.ps1 -ListKnown -Format json
-    pwsh delphi-toolchain-inspect.ps1 -ListKnown -DataFile ./data/custom.json
+    pwsh delphi-inspect.ps1 -ListKnown
+    pwsh delphi-inspect.ps1 -ListKnown -Format json
+    pwsh delphi-inspect.ps1 -ListKnown -DataFile ./data/custom.json
 
 ### Output (object format, default)
 
@@ -213,7 +213,7 @@ will actually have a `versions` entry for every item in the dataset_
       "ok": true,
       "command": "listKnown",
       "tool": {
-        "name": "delphi-toolchain-inspect",
+        "name": "delphi-inspect",
         "impl": "pwsh",
         "version": "0.1.0"
       },
@@ -388,13 +388,13 @@ servers.
 
 ### Examples
 
-    pwsh delphi-toolchain-inspect.ps1 -ListInstalled -Platform Win32 -BuildSystem DCC
-    pwsh delphi-toolchain-inspect.ps1 -ListInstalled -Platform Win64 -BuildSystem MSBuild
-    pwsh delphi-toolchain-inspect.ps1 -ListInstalled -Platform Win32 -BuildSystem DCC -Format json
-    pwsh delphi-toolchain-inspect.ps1 -ListInstalled -Platform Win32 -BuildSystem DCC -Readiness all
-    pwsh delphi-toolchain-inspect.ps1 -ListInstalled -Platform Win32 -BuildSystem DCC -Readiness ready,partialInstall
-    pwsh delphi-toolchain-inspect.ps1 -ListInstalled -Platform Win32 -BuildSystem DCC -Readiness all -Format json
-    $inst = pwsh delphi-toolchain-inspect.ps1 -ListInstalled -Platform Win32 -BuildSystem DCC -Readiness all
+    pwsh delphi-inspect.ps1 -ListInstalled -Platform Win32 -BuildSystem DCC
+    pwsh delphi-inspect.ps1 -ListInstalled -Platform Win64 -BuildSystem MSBuild
+    pwsh delphi-inspect.ps1 -ListInstalled -Platform Win32 -BuildSystem DCC -Format json
+    pwsh delphi-inspect.ps1 -ListInstalled -Platform Win32 -BuildSystem DCC -Readiness all
+    pwsh delphi-inspect.ps1 -ListInstalled -Platform Win32 -BuildSystem DCC -Readiness ready,partialInstall
+    pwsh delphi-inspect.ps1 -ListInstalled -Platform Win32 -BuildSystem DCC -Readiness all -Format json
+    $inst = pwsh delphi-inspect.ps1 -ListInstalled -Platform Win32 -BuildSystem DCC -Readiness all
 
 ### Output (object format, default)
 
@@ -452,7 +452,7 @@ that are `notApplicable` for the requested platform or build system.
       "ok": true,
       "command": "listInstalled",
       "tool": {
-        "name": "delphi-toolchain-inspect",
+        "name": "delphi-inspect",
         "impl": "pwsh",
         "version": "0.1.0"
       },
@@ -533,9 +533,9 @@ a description of the `DCC` and `MSBuild` readiness criteria.
 
 ### Examples
 
-    pwsh delphi-toolchain-inspect.ps1 -DetectLatest
-    pwsh delphi-toolchain-inspect.ps1 -DetectLatest -Platform Win32 -BuildSystem DCC
-    pwsh delphi-toolchain-inspect.ps1 -DetectLatest -Platform Win64 -BuildSystem MSBuild -Format json
+    pwsh delphi-inspect.ps1 -DetectLatest
+    pwsh delphi-inspect.ps1 -DetectLatest -Platform Win32 -BuildSystem DCC
+    pwsh delphi-inspect.ps1 -DetectLatest -Platform Win64 -BuildSystem MSBuild -Format json
 
 ### Output (object format, default)
 
@@ -582,7 +582,7 @@ When a ready installation is found:
       "ok": true,
       "command": "detectLatest",
       "tool": {
-        "name": "delphi-toolchain-inspect",
+        "name": "delphi-inspect",
         "impl": "pwsh",
         "version": "0.1.0"
       },

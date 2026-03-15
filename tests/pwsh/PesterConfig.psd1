@@ -1,4 +1,4 @@
-# PesterConfiguration for delphi-toolchain-inspect PowerShell tests.
+# PesterConfiguration for delphi-inspect PowerShell tests.
 # Run from the repository root with:
 #   Invoke-Pester -Configuration (New-PesterConfiguration -Hashtable (Import-PowerShellDataFile ./tests/pwsh/PesterConfig.psd1))
 # Or via the runner script (location-independent):

@@ -1,7 +1,7 @@
 # detect-registry-error-shim.ps1
 # Test shim: injects a registry access failure into the -ListInstalled path.
 #
-# Dot-sources delphi-toolchain-inspect.ps1 to import all functions and exit-code
+# Dot-sources delphi-inspect.ps1 to import all functions and exit-code
 # constants (the dot-source guard fires so only the pre-guard definitions load),
 # then overrides Get-RegistryRootDir with a version that always throws, then
 # runs Import-JsonData and the detect loop to trigger exit code 5.
@@ -26,7 +26,7 @@ $ErrorActionPreference = 'Stop'
 # The dot-source guard ($MyInvocation.InvocationName -eq '.') fires and returns
 # before the top-level try/catch, so only functions and variables defined above
 # the guard (including all $Exit* constants) are imported.
-$mainScript = Join-Path $PSScriptRoot '..' '..' '..' 'source' 'pwsh' 'delphi-toolchain-inspect.ps1'
+$mainScript = Join-Path $PSScriptRoot '..' '..' '..' 'source' 'pwsh' 'delphi-inspect.ps1'
 $mainScript = [System.IO.Path]::GetFullPath($mainScript)
 
 # Save the shim's parameter values before dot-sourcing.  When a script is dot-sourced

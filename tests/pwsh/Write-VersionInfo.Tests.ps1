@@ -1,7 +1,7 @@
 #Requires -Modules @{ ModuleName='Pester'; ModuleVersion='5.7.0' }
 <#
 .SYNOPSIS
-  Tests for Write-VersionInfo in delphi-toolchain-inspect.ps1
+  Tests for Write-VersionInfo in delphi-inspect.ps1
 
 .DESCRIPTION
   Covers: output lines produced for various data shapes.
@@ -65,7 +65,7 @@ Describe 'Write-VersionInfo' {
 
     # Exact match: this line is the format contract for the tool header.
     It 'first output line identifies the tool and version' {
-      $script:output[0] | Should -Be 'delphi-toolchain-inspect 0.1.0'
+      $script:output[0] | Should -Be 'delphi-inspect 0.1.0'
     }
 
     # Array -match returns elements that satisfy the pattern, so these pass

@@ -1,7 +1,7 @@
 #Requires -Modules @{ ModuleName='Pester'; ModuleVersion='5.7.0' }
 <#
 .SYNOPSIS
-  Tests for Resolve-DefaultDataFilePath in delphi-toolchain-inspect.ps1
+  Tests for Resolve-DefaultDataFilePath in delphi-inspect.ps1
 
 .DESCRIPTION
   Covers: path construction from a given script location.
@@ -35,9 +35,9 @@ Describe 'Resolve-DefaultDataFilePath' {
   Context 'Given a script path in a standard source/pwsh layout' {
 
     BeforeAll {
-      $fakeRepo              = Join-Path ([System.IO.Path]::GetTempPath()) 'delphi-toolchain-inspect-test-repo'
+      $fakeRepo              = Join-Path ([System.IO.Path]::GetTempPath()) 'delphi-inspect-test-repo'
       $fakeScriptDir         = Join-Path $fakeRepo 'source' 'pwsh'
-      $script:fakeScriptPath = Join-Path $fakeScriptDir 'delphi-toolchain-inspect.ps1'
+      $script:fakeScriptPath = Join-Path $fakeScriptDir 'delphi-inspect.ps1'
       # Create a placeholder file so the guard's Test-Path check passes.
       $null = New-Item -ItemType Directory -Path $fakeScriptDir -Force
       $null = New-Item -ItemType File -Path $script:fakeScriptPath -Force

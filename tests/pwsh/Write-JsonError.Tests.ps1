@@ -1,7 +1,7 @@
 #Requires -Modules @{ ModuleName='Pester'; ModuleVersion='5.7.0' }
 <#
 .SYNOPSIS
-  Tests for Write-JsonError in delphi-toolchain-inspect.ps1
+  Tests for Write-JsonError in delphi-inspect.ps1
 
 .DESCRIPTION
   Covers: JSON error envelope shape emitted by Write-JsonError.
@@ -44,8 +44,8 @@ Describe 'Write-JsonError' {
       $script:json.error.message | Should -Match 'Data file not found'
     }
 
-    It 'tool.name is delphi-toolchain-inspect' {
-      $script:json.tool.name | Should -Be 'delphi-toolchain-inspect'
+    It 'tool.name is delphi-inspect' {
+      $script:json.tool.name | Should -Be 'delphi-inspect'
     }
 
     It 'tool.impl is pwsh' {

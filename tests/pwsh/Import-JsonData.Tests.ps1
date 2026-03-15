@@ -1,7 +1,7 @@
 #Requires -Modules @{ ModuleName='Pester'; ModuleVersion='5.7.0' }
 <#
 .SYNOPSIS
-  Tests for Import-JsonData in delphi-toolchain-inspect.ps1
+  Tests for Import-JsonData in delphi-inspect.ps1
 
 .DESCRIPTION
   Covers: JSON file loading and parsing.
@@ -58,7 +58,7 @@ Describe 'Import-JsonData' {
   Context 'Given a path that does not exist' {
 
     It 'throws with a message containing "Data file not found"' {
-      $missingPath = Join-Path ([System.IO.Path]::GetTempPath()) 'delphi-toolchain-inspect-missing-xyz.json'
+      $missingPath = Join-Path ([System.IO.Path]::GetTempPath()) 'delphi-inspect-missing-xyz.json'
       { Import-JsonData -Path $missingPath } | Should -Throw -ExpectedMessage '*Data file not found*'
     }
 
@@ -67,7 +67,7 @@ Describe 'Import-JsonData' {
   Context 'Given a file with malformed JSON' {
 
     BeforeAll {
-      $script:badJsonPath = Join-Path ([System.IO.Path]::GetTempPath()) 'delphi-toolchain-inspect-bad-json.json'
+      $script:badJsonPath = Join-Path ([System.IO.Path]::GetTempPath()) 'delphi-inspect-bad-json.json'
       Set-Content -LiteralPath $script:badJsonPath -Value '{ this is : not valid json' -Encoding UTF8NoBOM
     }
 

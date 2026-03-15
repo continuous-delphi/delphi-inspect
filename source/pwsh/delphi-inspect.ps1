@@ -1,5 +1,5 @@
 <#
-delphi-toolchain-inspect.ps1
+delphi-inspect.ps1
 
 Minimal V1:
 - Loads the Delphi compiler versions dataset JSON.
@@ -8,18 +8,18 @@ Minimal V1:
 ASCII-only.
 
 USAGE
-  pwsh ./source/delphi-toolchain-inspect.ps1
-  pwsh ./source/delphi-toolchain-inspect.ps1 -Version
-  pwsh ./source/delphi-toolchain-inspect.ps1 -Version -Format json
-  pwsh ./source/delphi-toolchain-inspect.ps1 -Resolve -Name <alias>
-  pwsh ./source/delphi-toolchain-inspect.ps1 -Resolve <alias>
-  pwsh ./source/delphi-toolchain-inspect.ps1 -Resolve -Name <alias> -Format json
-  pwsh ./source/delphi-toolchain-inspect.ps1 -DataFile <path>
-  pwsh ./source/delphi-toolchain-inspect.ps1 -DetectLatest -Platform Win32 -BuildSystem DCC
-  pwsh ./source/delphi-toolchain-inspect.ps1 -DetectLatest -Platform Win32 -BuildSystem DCC -Format json
-  pwsh ./source/delphi-toolchain-inspect.ps1 -ListInstalled -Platform Win32 -BuildSystem DCC
-  pwsh ./source/delphi-toolchain-inspect.ps1 -ListInstalled -Platform Win32 -BuildSystem DCC -Readiness all
-  pwsh ./source/delphi-toolchain-inspect.ps1 -ListInstalled -Platform Win32 -BuildSystem DCC -Readiness partialInstall
+  pwsh ./source/delphi-inspect.ps1
+  pwsh ./source/delphi-inspect.ps1 -Version
+  pwsh ./source/delphi-inspect.ps1 -Version -Format json
+  pwsh ./source/delphi-inspect.ps1 -Resolve -Name <alias>
+  pwsh ./source/delphi-inspect.ps1 -Resolve <alias>
+  pwsh ./source/delphi-inspect.ps1 -Resolve -Name <alias> -Format json
+  pwsh ./source/delphi-inspect.ps1 -DataFile <path>
+  pwsh ./source/delphi-inspect.ps1 -DetectLatest -Platform Win32 -BuildSystem DCC
+  pwsh ./source/delphi-inspect.ps1 -DetectLatest -Platform Win32 -BuildSystem DCC -Format json
+  pwsh ./source/delphi-inspect.ps1 -ListInstalled -Platform Win32 -BuildSystem DCC
+  pwsh ./source/delphi-inspect.ps1 -ListInstalled -Platform Win32 -BuildSystem DCC -Readiness all
+  pwsh ./source/delphi-inspect.ps1 -ListInstalled -Platform Win32 -BuildSystem DCC -Readiness partialInstall
 
 NOTES
   Default behavior is equivalent to -Version.
@@ -156,7 +156,7 @@ function Write-JsonError {
   Write-JsonOutput ([pscustomobject]@{
     ok      = $false
     command = $Command
-    tool    = [pscustomobject]@{ name = 'delphi-toolchain-inspect'; impl = 'pwsh'; version = $ToolVersion }
+    tool    = [pscustomobject]@{ name = 'delphi-inspect'; impl = 'pwsh'; version = $ToolVersion }
     error   = [pscustomobject]@{ code = $Code; message = $Message }
   } )
 }
@@ -190,7 +190,7 @@ function Write-VersionInfo {
     Write-JsonOutput ([pscustomobject]@{
       ok      = $true
       command = 'version'
-      tool    = [pscustomobject]@{ name = 'delphi-toolchain-inspect'; impl = 'pwsh'; version = $ToolVersion }
+      tool    = [pscustomobject]@{ name = 'delphi-inspect'; impl = 'pwsh'; version = $ToolVersion }
       result  = [pscustomobject]@{
         schemaVersion      = $schemaVersion
         dataVersion        = $dataVersion
@@ -200,7 +200,7 @@ function Write-VersionInfo {
     return
   }
 
-  Write-Output ("delphi-toolchain-inspect {0}" -f $ToolVersion)
+  Write-Output ("delphi-inspect {0}" -f $ToolVersion)
   Write-Output ("dataVersion     {0}" -f $dataVersion)
   Write-Output ("schemaVersion   {0}" -f $schemaVersion)
   if (-not [string]::IsNullOrWhiteSpace($generated)) {
@@ -260,7 +260,7 @@ function Write-ResolveOutput {
     Write-JsonOutput ([pscustomobject]@{
       ok      = $true
       command = 'resolve'
-      tool    = [pscustomobject]@{ name = 'delphi-toolchain-inspect'; impl = 'pwsh'; version = $ToolVersion }
+      tool    = [pscustomobject]@{ name = 'delphi-inspect'; impl = 'pwsh'; version = $ToolVersion }
       result  = [pscustomobject]@{
         verDefine          = $Entry.verDefine
         productName        = $Entry.productName
@@ -325,7 +325,7 @@ function Write-ListKnownOutput {
     Write-JsonOutput ([pscustomobject]@{
       ok      = $true
       command = 'listKnown'
-      tool    = [pscustomobject]@{ name = 'delphi-toolchain-inspect'; impl = 'pwsh'; version = $ToolVersion }
+      tool    = [pscustomobject]@{ name = 'delphi-inspect'; impl = 'pwsh'; version = $ToolVersion }
       result  = [pscustomobject]@{
         schemaVersion    = $Data.schemaVersion
         dataVersion      = $Data.dataVersion
@@ -561,7 +561,7 @@ function Write-ListInstalledOutput {
     Write-JsonOutput ([pscustomobject]@{
       ok      = $true
       command = 'listInstalled'
-      tool    = [pscustomobject]@{ name = 'delphi-toolchain-inspect'; impl = 'pwsh'; version = $ToolVersion }
+      tool    = [pscustomobject]@{ name = 'delphi-inspect'; impl = 'pwsh'; version = $ToolVersion }
       result  = [pscustomobject]@{
         platform      = $Platform
         buildSystem   = $BuildSystem
@@ -651,7 +651,7 @@ function Write-DetectLatestOutput {
     Write-JsonOutput ([pscustomobject]@{
       ok      = $true
       command = 'detectLatest'
-      tool    = [pscustomobject]@{ name = 'delphi-toolchain-inspect'; impl = 'pwsh'; version = $ToolVersion }
+      tool    = [pscustomobject]@{ name = 'delphi-inspect'; impl = 'pwsh'; version = $ToolVersion }
       result  = [pscustomobject]@{
         platform     = $Platform
         buildSystem  = $BuildSystem

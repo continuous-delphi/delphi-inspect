@@ -1,7 +1,7 @@
 #Requires -Modules @{ ModuleName='Pester'; ModuleVersion='5.7.0' }
 <#
 .SYNOPSIS
-  Tests for Test-EnvOptionsLibraryPath in delphi-toolchain-inspect.ps1
+  Tests for Test-EnvOptionsLibraryPath in delphi-inspect.ps1
 
 .DESCRIPTION
   Covers: XML parsing of EnvOptions.proj to detect Delphi library path properties.

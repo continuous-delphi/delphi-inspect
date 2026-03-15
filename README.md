@@ -1,7 +1,7 @@
- # delphi-toolchain-inspect
+ # delphi-inspect
 
 ![Status](https://img.shields.io/badge/status-incubator-orange)
-![License](https://img.shields.io/github/license/continuous-delphi/delphi-toolchain-inspect)
+![License](https://img.shields.io/github/license/continuous-delphi/delphi-inspect)
 ![Version](https://img.shields.io/badge/version-0.1.0-blue)
 ![Delphi](https://img.shields.io/badge/delphi-red)
 ![PowerShell](https://img.shields.io/badge/powershell-7.4%2B-blue)
@@ -24,29 +24,29 @@ first-class deliverables.
 
 ```powershell
 # Object mode (default) -- returns PowerShell objects; pipe, filter, or assign directly
-$ver  = pwsh delphi-toolchain-inspect.ps1 -Version
-$d7   = pwsh delphi-toolchain-inspect.ps1 -Resolve D7
-$all  = pwsh delphi-toolchain-inspect.ps1 -ListKnown
-$inst = pwsh delphi-toolchain-inspect.ps1 -ListInstalled -Platform Win32 -BuildSystem DCC -Readiness all
-$best = pwsh delphi-toolchain-inspect.ps1 -DetectLatest
+$ver  = pwsh delphi-inspect.ps1 -Version
+$d7   = pwsh delphi-inspect.ps1 -Resolve D7
+$all  = pwsh delphi-inspect.ps1 -ListKnown
+$inst = pwsh delphi-inspect.ps1 -ListInstalled -Platform Win32 -BuildSystem DCC -Readiness all
+$best = pwsh delphi-inspect.ps1 -DetectLatest
 
 # Text format -- human-readable output
-pwsh delphi-toolchain-inspect.ps1
-pwsh delphi-toolchain-inspect.ps1 -Version -Format text
-pwsh delphi-toolchain-inspect.ps1 -Resolve D7 -Format text
-pwsh delphi-toolchain-inspect.ps1 -Resolve -Name D7 -Format text
-pwsh delphi-toolchain-inspect.ps1 -Resolve "Delphi 11" -Format text
-pwsh delphi-toolchain-inspect.ps1 -ListKnown -Format text
-pwsh delphi-toolchain-inspect.ps1 -ListInstalled -Platform Win32 -BuildSystem DCC -Format text
-pwsh delphi-toolchain-inspect.ps1 -ListInstalled -Platform Win32 -BuildSystem DCC -Readiness all -Format text
-pwsh delphi-toolchain-inspect.ps1 -DetectLatest -Format text
-pwsh delphi-toolchain-inspect.ps1 -DetectLatest -Platform Win64 -BuildSystem DCC -Format text
+pwsh delphi-inspect.ps1
+pwsh delphi-inspect.ps1 -Version -Format text
+pwsh delphi-inspect.ps1 -Resolve D7 -Format text
+pwsh delphi-inspect.ps1 -Resolve -Name D7 -Format text
+pwsh delphi-inspect.ps1 -Resolve "Delphi 11" -Format text
+pwsh delphi-inspect.ps1 -ListKnown -Format text
+pwsh delphi-inspect.ps1 -ListInstalled -Platform Win32 -BuildSystem DCC -Format text
+pwsh delphi-inspect.ps1 -ListInstalled -Platform Win32 -BuildSystem DCC -Readiness all -Format text
+pwsh delphi-inspect.ps1 -DetectLatest -Format text
+pwsh delphi-inspect.ps1 -DetectLatest -Platform Win64 -BuildSystem DCC -Format text
 
 # JSON format -- machine envelope for CI pipelines
-pwsh delphi-toolchain-inspect.ps1 -Resolve D7 -Format json
-pwsh delphi-toolchain-inspect.ps1 -ListKnown -Format json
-pwsh delphi-toolchain-inspect.ps1 -ListInstalled -Platform Win32 -BuildSystem MSBuild -Readiness all -Format json
-pwsh delphi-toolchain-inspect.ps1 -DetectLatest -Platform Win64 -BuildSystem DCC -Format json
+pwsh delphi-inspect.ps1 -Resolve D7 -Format json
+pwsh delphi-inspect.ps1 -ListKnown -Format json
+pwsh delphi-inspect.ps1 -ListInstalled -Platform Win32 -BuildSystem MSBuild -Readiness all -Format json
+pwsh delphi-inspect.ps1 -DetectLatest -Platform Win64 -BuildSystem DCC -Format json
 ```
 
 ## Philosophy
@@ -176,7 +176,7 @@ Success (`-Version`):
   "ok": true,
   "command": "version",
   "tool": {
-    "name": "delphi-toolchain-inspect",
+    "name": "delphi-inspect",
     "impl": "pwsh|delphi",
     "version": "X.Y.Z"
   },
@@ -195,7 +195,7 @@ Success (`-Resolve`):
   "ok": true,
   "command": "resolve",
   "tool": {
-    "name": "delphi-toolchain-inspect",
+    "name": "delphi-inspect",
     "impl": "pwsh|delphi",
     "version": "X.Y.Z"
   },
@@ -220,7 +220,7 @@ Error:
   "ok": false,
   "command": "version",
   "tool": {
-    "name": "delphi-toolchain-inspect",
+    "name": "delphi-inspect",
     "impl": "pwsh|delphi",
     "version": "X.Y.Z"
   },

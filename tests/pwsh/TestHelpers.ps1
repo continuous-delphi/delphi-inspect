@@ -1,16 +1,16 @@
 # TestHelpers.ps1
-# Shared setup for all delphi-toolchain-inspect Pester tests.
+# Shared setup for all delphi-inspect Pester tests.
 #
 # Dot-source this file at the top of each *.Tests.ps1:
 #   . "$PSScriptRoot/TestHelpers.ps1"
 #
 # Provides (run scope -- usable inside BeforeAll / It blocks):
-#   Get-ScriptUnderTestPath    - returns absolute path to delphi-toolchain-inspect.ps1
+#   Get-ScriptUnderTestPath    - returns absolute path to delphi-inspect.ps1
 #   Get-MinFixturePath         - returns absolute path to the minimal fixture JSON
 #   Get-ResolveFixturePath     - returns absolute path to the resolve fixture JSON
 #   Get-DetectFixturePath      - returns absolute path to the listInstalled fixture JSON
 #   Get-RegistryErrorShimPath  - returns absolute path to detect-registry-error-shim.ps1
-#   Invoke-ToolProcess         - runs delphi-toolchain-inspect.ps1 as a child process and
+#   Invoke-ToolProcess         - runs delphi-inspect.ps1 as a child process and
 #                                returns [pscustomobject]@{ ExitCode; StdOut; StdErr }
 #
 # PESTER 5 SCOPING NOTE:
@@ -28,12 +28,12 @@
 #       }
 #     }
 #
-#   This file intentionally does NOT dot-source delphi-toolchain-inspect.ps1.
+#   This file intentionally does NOT dot-source delphi-inspect.ps1.
 #   That dot-source must happen in the test file's own BeforeAll so that
 #   the loaded functions land in the correct scope for It blocks.
 
 function Get-ScriptUnderTestPath {
-  $path = Join-Path $PSScriptRoot '..' '..' 'source' 'pwsh' 'delphi-toolchain-inspect.ps1'
+  $path = Join-Path $PSScriptRoot '..' '..' 'source' 'pwsh' 'delphi-inspect.ps1'
   return [System.IO.Path]::GetFullPath($path)
 }
 

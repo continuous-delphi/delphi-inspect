@@ -1,7 +1,7 @@
 #Requires -Modules @{ ModuleName='Pester'; ModuleVersion='5.7.0' }
 <#
 .SYNOPSIS
-  Tests for Write-ListKnownOutput in delphi-toolchain-inspect.ps1
+  Tests for Write-ListKnownOutput in delphi-inspect.ps1
 
 .DESCRIPTION
   Covers: per-entry lines for text format and JSON envelope output.

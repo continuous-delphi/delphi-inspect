@@ -1,4 +1,4 @@
-# delphi-toolchain-inspect Tests
+# delphi-inspect Tests
 
 ## Running the tests
 
@@ -171,7 +171,7 @@ Uses in-memory pscustomobject arrays -- no mocking required.
 - JSON, MSBuild mode: result.buildSystem=MSBuild; MSBuild-specific fields present;
   notApplicable entry has registryFound=null
 
-### delphi-toolchain-inspect.ps1 subprocess integration (107 tests)
+### delphi-inspect.ps1 subprocess integration (107 tests)
 
 Invokes the script as a child process via `Invoke-ToolProcess`; validates exit
 codes, stdout, and stderr.  Covers the dispatch block that the dot-source guard
@@ -223,7 +223,7 @@ Every test file must begin with:
 #Requires -Modules @{ ModuleName='Pester'; ModuleVersion='5.7.0' }
 <#
 .SYNOPSIS
-  Tests for <FunctionName> in delphi-toolchain-inspect.ps1
+  Tests for <FunctionName> in delphi-inspect.ps1
 
 .DESCRIPTION
   Covers: <brief description of what is tested>
@@ -270,7 +270,7 @@ variables lets all path logic stay in one place.
 Variables assigned in `BeforeAll` must use the `$script:` prefix to be
 visible inside `It` blocks within the same `Describe` or `Context`.
 
-### Dot-source guard in delphi-toolchain-inspect.ps1
+### Dot-source guard in delphi-inspect.ps1
 
 The script under test contains a dot-source guard at the top:
 

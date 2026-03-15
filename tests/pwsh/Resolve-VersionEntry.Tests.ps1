@@ -1,7 +1,7 @@
 #Requires -Modules @{ ModuleName='Pester'; ModuleVersion='5.7.0' }
 <#
 .SYNOPSIS
-  Tests for Resolve-VersionEntry in delphi-toolchain-inspect.ps1
+  Tests for Resolve-VersionEntry in delphi-inspect.ps1
 
 .DESCRIPTION
   Covers: alias lookup logic across the versions array.

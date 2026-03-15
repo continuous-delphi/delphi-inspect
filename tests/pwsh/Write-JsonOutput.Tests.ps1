@@ -1,7 +1,7 @@
 #Requires -Modules @{ ModuleName='Pester'; ModuleVersion='5.7.0' }
 <#
 .SYNOPSIS
-  Tests for Write-JsonOutput in delphi-toolchain-inspect.ps1
+  Tests for Write-JsonOutput in delphi-inspect.ps1
 
 .DESCRIPTION
   Covers: JSON serialization behavior of Write-JsonOutput.
