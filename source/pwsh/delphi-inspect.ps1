@@ -44,6 +44,8 @@ NOTES
 #>
 
 [CmdletBinding(DefaultParameterSetName='Version')]
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'ExitInvalidArguments',
+  Justification='Reserved exit code constant; not yet referenced in code paths')]
 param(
   [Parameter(ParameterSetName='Version')]
   [switch]$Version,
@@ -128,8 +130,8 @@ function Resolve-DefaultDataFilePath {
   # Prefer the submodule layout:
   #   ../delphi-compiler-versions/data/delphi-compiler-versions.json
   # Use Join-Path to remain path-separator-safe if invoked on non-Windows runners.
-  $repoRoot    = Join-Path $scriptDir '..' '..'
-  $specRoot    = Join-Path $repoRoot 'submodules' 'delphi-compiler-versions'
+  $repoRoot    = Join-Path -Path $scriptDir -ChildPath '..' -AdditionalChildPath '..'
+  $specRoot    = Join-Path -Path $repoRoot -ChildPath 'submodules' -AdditionalChildPath 'delphi-compiler-versions'
   $dataDir     = Join-Path $specRoot 'data'
   $defaultPath = Join-Path $dataDir 'delphi-compiler-versions.json'
 
@@ -386,6 +388,8 @@ function Get-RegistryRootDir {
 }
 
 function Test-EnvOptionsLibraryPath {
+  [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'Platform',
+    Justification='Platform differentiation is in the XML Condition attributes, not the element name; parameter kept for interface consistency')]
   param(
     [string]$Path,
     [string]$Platform
@@ -514,7 +518,7 @@ function Get-MSBuildReadiness {
   $compilerBinFolder = if ($script:CompilerMap[$Platform].EndsWith('64')) { 'bin64' } else { 'bin' }
   $compilerBinPath   = Join-Path $rootDir $compilerBinFolder
   $bdsVersion = Split-Path -Leaf $Entry.regKeyRelativePath
-  $envOptPath = Join-Path $env:APPDATA 'Embarcadero' 'BDS' $bdsVersion 'EnvOptions.proj'
+  $envOptPath = Join-Path -Path $env:APPDATA -ChildPath 'Embarcadero' -AdditionalChildPath 'BDS', $bdsVersion, 'EnvOptions.proj'
 
   $result.registryFound   = $true
   $result.rootDir         = $rootDir

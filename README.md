@@ -1,6 +1,6 @@
  # delphi-inspect
 
-![delphi-inspect logo](https://github.com/continuous-delphi/.github/blob/main/profile/delphi-inspect-480x270.png?raw=true)
+![delphi-inspect logo](https://continuous-delphi.github.io/assets/logos/delphi-inspect-480x270.png)
 
 ![Status](https://img.shields.io/badge/status-incubator-orange)
 ![License](https://img.shields.io/github/license/continuous-delphi/delphi-inspect.svg)
@@ -261,9 +261,9 @@ It will graduate to `stable` once:
 
 Until graduation, breaking changes may occur in both implementations.
 
-![continuous-delphi logo](https://github.com/continuous-delphi/.github/blob/main/profile/ContinuousDelphi-gray-480x270.png?raw=true)
+![continuous-delphi logo](https://continuous-delphi.github.io/assets/logos/continuous-delphi-480x270.png)
 
-## Part of Continuous Delphi
+## Part of the Continuous Delphi Organization
 
 This repository follows the Continuous Delphi organization taxonomy. See
 [cd-meta-org](https://github.com/continuous-delphi/cd-meta-org) for navigation and governance.
