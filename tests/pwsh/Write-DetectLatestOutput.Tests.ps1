@@ -61,6 +61,7 @@ Describe 'Write-DetectLatestOutput' {
       rsvarsPath               = 'C:\Fake\Delphi13\bin\rsvars.bat'
       rootDirExists            = $true
       rsvarsFound              = $true
+      compilerFound            = $true
       envOptionsFound          = $true
       envOptionsHasLibraryPath = $true
     }
@@ -156,16 +157,16 @@ Describe 'Write-DetectLatestOutput' {
       ($script:out -match 'rsvarsFound\s+true') | Should -Not -BeNullOrEmpty
     }
 
+    It 'includes a compilerFound line showing true' {
+      ($script:out -match 'compilerFound\s+true') | Should -Not -BeNullOrEmpty
+    }
+
     It 'includes an envOptionsFound line showing true' {
       ($script:out -match 'envOptionsFound\s+true') | Should -Not -BeNullOrEmpty
     }
 
     It 'includes an envOptionsHasLibraryPath line showing true' {
       ($script:out -match 'envOptionsHasLibraryPath\s+true') | Should -Not -BeNullOrEmpty
-    }
-
-    It 'does not include DCC-specific compilerFound line' {
-      ($script:out -match '^\s+compilerFound') | Should -BeNullOrEmpty
     }
 
     It 'does not include DCC-specific cfgFound line' {
@@ -278,6 +279,10 @@ Describe 'Write-DetectLatestOutput' {
 
     It 'result.installation.rsvarsFound is true' {
       $script:json.result.installation.rsvarsFound | Should -Be $true
+    }
+
+    It 'result.installation.compilerFound is true' {
+      $script:json.result.installation.compilerFound | Should -Be $true
     }
 
     It 'result.installation.envOptionsFound is true' {

@@ -31,10 +31,13 @@
     readiness=partialInstall, envOptionsHasLibraryPath=$null,
     Test-EnvOptionsLibraryPath never called.
 
-  Context 9 - partialInstall: envOptionsHasLibraryPath=false:
+  Context 9 - partialInstall: compilerFound=false:
+    readiness=partialInstall, compilerFound=false, rsvarsFound=true, envOptionsFound=true.
+
+  Context 10 - partialInstall: envOptionsHasLibraryPath=false:
     readiness=partialInstall, envOptionsHasLibraryPath=false.
 
-  Context 10 - bdsVersion extracted from regKeyRelativePath leaf:
+  Context 11 - bdsVersion extracted from regKeyRelativePath leaf:
     EnvOptions.proj path uses the version component from the registry key.
 #>
 
@@ -179,6 +182,10 @@ Describe 'Get-MSBuildReadiness' {
       $script:result.rsvarsFound | Should -Be $true
     }
 
+    It 'compilerFound is true' {
+      $script:result.compilerFound | Should -Be $true
+    }
+
     It 'envOptionsFound is true' {
       $script:result.envOptionsFound | Should -Be $true
     }
@@ -191,6 +198,12 @@ Describe 'Get-MSBuildReadiness' {
       # Call inside the It so Pester 5 tracks it in this test's call history
       Get-MSBuildReadiness -Entry $script:entryBoth -Platform 'Win32' | Out-Null
       Should -Invoke Test-Path -ParameterFilter { $LiteralPath -match 'rsvars\.bat' }
+    }
+
+    It 'checks dcc32.exe for Win32' {
+      # Call inside the It so Pester 5 tracks it in this test's call history
+      Get-MSBuildReadiness -Entry $script:entryBoth -Platform 'Win32' | Out-Null
+      Should -Invoke Test-Path -ParameterFilter { $LiteralPath -match 'dcc32\.exe' }
     }
 
   }
@@ -270,6 +283,34 @@ Describe 'Get-MSBuildReadiness' {
 
     It 'Test-EnvOptionsLibraryPath was not called' {
       Should -Invoke Test-EnvOptionsLibraryPath -Times 0 -Exactly
+    }
+
+  }
+
+  Context 'partialInstall - compilerFound is false, others true' {
+
+    BeforeAll {
+      Mock Get-RegistryRootDir { return 'C:\Fake\Delphi13' }
+      Mock Test-Path -ParameterFilter { $LiteralPath -match 'dcc32\.exe' } { return $false }
+      Mock Test-Path { return $true }
+      Mock Test-EnvOptionsLibraryPath { return $true }
+      $script:result = Get-MSBuildReadiness -Entry $script:entryBoth -Platform 'Win32'
+    }
+
+    It 'readiness is partialInstall' {
+      $script:result.readiness | Should -Be 'partialInstall'
+    }
+
+    It 'compilerFound is false' {
+      $script:result.compilerFound | Should -Be $false
+    }
+
+    It 'rsvarsFound is true' {
+      $script:result.rsvarsFound | Should -Be $true
+    }
+
+    It 'envOptionsFound is true' {
+      $script:result.envOptionsFound | Should -Be $true
     }
 
   }

@@ -98,6 +98,7 @@ Describe 'Write-ListInstalledOutput' {
       rsvarsPath               = 'C:\Fake\Delphi13\bin\rsvars.bat'
       rootDirExists            = $true
       rsvarsFound              = $true
+      compilerFound            = $true
       envOptionsFound          = $true
       envOptionsHasLibraryPath = $true
     }
@@ -111,6 +112,7 @@ Describe 'Write-ListInstalledOutput' {
       rsvarsPath               = 'C:\Fake\Delphi13\bin\rsvars.bat'
       rootDirExists            = $true
       rsvarsFound              = $true
+      compilerFound            = $true
       envOptionsFound          = $false
       envOptionsHasLibraryPath = $null
     }
@@ -124,6 +126,7 @@ Describe 'Write-ListInstalledOutput' {
       rsvarsPath               = $null
       rootDirExists            = $null
       rsvarsFound              = $null
+      compilerFound            = $null
       envOptionsFound          = $null
       envOptionsHasLibraryPath = $null
     }
@@ -137,6 +140,7 @@ Describe 'Write-ListInstalledOutput' {
       rsvarsPath               = $null
       rootDirExists            = $null
       rsvarsFound              = $null
+      compilerFound            = $null
       envOptionsFound          = $null
       envOptionsHasLibraryPath = $null
     }
@@ -266,16 +270,16 @@ Describe 'Write-ListInstalledOutput' {
       ($script:out -match 'rsvarsFound\s+true') | Should -Not -BeNullOrEmpty
     }
 
+    It 'includes a compilerFound line showing true' {
+      ($script:out -match 'compilerFound\s+true') | Should -Not -BeNullOrEmpty
+    }
+
     It 'includes an envOptionsFound line showing false' {
       ($script:out -match 'envOptionsFound\s+false') | Should -Not -BeNullOrEmpty
     }
 
     It 'includes envOptionsHasLibraryPath line showing null' {
       ($script:out -match 'envOptionsHasLibraryPath\s+null') | Should -Not -BeNullOrEmpty
-    }
-
-    It 'does not include DCC-specific compilerFound line' {
-      ($script:out -match '^\s+compilerFound') | Should -BeNullOrEmpty
     }
 
     It 'does not include DCC-specific cfgFound line' {
@@ -373,6 +377,11 @@ Describe 'Write-ListInstalledOutput' {
     It 'ready MSBuild entry has rsvarsFound field' {
       $entry = @($script:json.result.installations | Where-Object { $_.readiness -eq 'ready' })[0]
       $entry.rsvarsFound | Should -Be $true
+    }
+
+    It 'ready MSBuild entry has compilerFound field' {
+      $entry = @($script:json.result.installations | Where-Object { $_.readiness -eq 'ready' })[0]
+      $entry.compilerFound | Should -Be $true
     }
 
     It 'ready MSBuild entry has envOptionsFound field' {

@@ -65,7 +65,7 @@ param(
 
   [Parameter(ParameterSetName='ListInstalled', Mandatory=$true)]
   [Parameter(ParameterSetName='DetectLatest')]
-  [ValidateSet('Win32', 'Win64')]
+  [ValidateSet('Win32', 'Win64', 'macOS32', 'macOS64', 'macOSARM64', 'Linux64', 'iOS32', 'iOSSimulator32', 'iOS64', 'iOSSimulator64', 'Android32', 'Android64')]
   [string]$Platform = 'Win32',
 
   [Parameter(ParameterSetName='ListInstalled', Mandatory=$true)]
@@ -99,6 +99,22 @@ $ExitDatasetError         = 3   # data file missing or unparseable
 $ExitAliasNotFound        = 4   # -Resolve name not in dataset
 $ExitRegistryError        = 5   # -ListInstalled registry access failure
 $ExitNoInstallationsFound = 6   # -ListInstalled: no ready/partial entries
+
+# Platform -> compiler base-name map; shared by Get-DccReadiness and Get-MSBuildReadiness.
+$script:CompilerMap = @{
+  'Win32'        = 'dcc32'
+  'Win64'        = 'dcc64'
+  'macOS32'      = 'dccosx'
+  'macOS64'      = 'dccosx64'
+  'macOSARM64'   = 'dccosxarm64'
+  'Linux64'      = 'dcclinux64'
+  'iOS32'          = 'dcciosarm'
+  'iOSSimulator32' = 'dccios32'
+  'iOS64'          = 'dcciosarm64'
+  'iOSSimulator64' = 'dcciossimarm64'
+  'Android32'    = 'dccaarm'
+  'Android64'    = 'dccaarm64'
+}
 
 function Resolve-DefaultDataFilePath {
   param([string]$ScriptPath)
@@ -397,9 +413,8 @@ function Get-DccReadiness {
     [psobject]$Entry,
     [string]$Platform
   )
-
-  $compilerExe = if ($Platform -eq 'Win64') { 'dcc64.exe' } else { 'dcc32.exe' }
-  $cfgFile     = if ($Platform -eq 'Win64') { 'dcc64.cfg' } else { 'dcc32.cfg' }
+  $compilerExe = "$($script:CompilerMap[$Platform]).exe"
+  $cfgFile     = "$($script:CompilerMap[$Platform]).cfg"
 
   $result = [pscustomobject]@{
     verDefine     = $Entry.verDefine
@@ -434,12 +449,13 @@ function Get-DccReadiness {
     return $result
   }
 
-  $binPath = Join-Path $rootDir 'bin'
+  $compilerBinFolder = if ($script:CompilerMap[$Platform].EndsWith('64')) { 'bin64' } else { 'bin' }
+  $compilerBinPath   = Join-Path $rootDir $compilerBinFolder
   $result.registryFound = $true
   $result.rootDir       = $rootDir
   $result.rootDirExists = Test-Path -LiteralPath $rootDir
-  $result.compilerFound = Test-Path -LiteralPath (Join-Path $binPath $compilerExe)
-  $result.cfgFound      = Test-Path -LiteralPath (Join-Path $binPath $cfgFile)
+  $result.compilerFound = Test-Path -LiteralPath (Join-Path $compilerBinPath $compilerExe)
+  $result.cfgFound      = Test-Path -LiteralPath (Join-Path $compilerBinPath $cfgFile)
 
   if ($result.rootDirExists -and $result.compilerFound -and $result.cfgFound) {
     $result.readiness = 'ready'
@@ -456,6 +472,8 @@ function Get-MSBuildReadiness {
     [string]$Platform
   )
 
+  $compilerExe = "$($script:CompilerMap[$Platform]).exe"
+
   $result = [pscustomobject]@{
     verDefine                = $Entry.verDefine
     productName              = $Entry.productName
@@ -465,6 +483,7 @@ function Get-MSBuildReadiness {
     rsvarsPath               = $null
     rootDirExists            = $null
     rsvarsFound              = $null
+    compilerFound            = $null
     envOptionsFound          = $null
     envOptionsHasLibraryPath = $null
   }
@@ -491,7 +510,9 @@ function Get-MSBuildReadiness {
     return $result
   }
 
-  $binPath    = Join-Path $rootDir 'bin'
+  $binPath           = Join-Path $rootDir 'bin'
+  $compilerBinFolder = if ($script:CompilerMap[$Platform].EndsWith('64')) { 'bin64' } else { 'bin' }
+  $compilerBinPath   = Join-Path $rootDir $compilerBinFolder
   $bdsVersion = Split-Path -Leaf $Entry.regKeyRelativePath
   $envOptPath = Join-Path $env:APPDATA 'Embarcadero' 'BDS' $bdsVersion 'EnvOptions.proj'
 
@@ -500,13 +521,14 @@ function Get-MSBuildReadiness {
   $result.rsvarsPath      = Join-Path $binPath 'rsvars.bat'
   $result.rootDirExists   = Test-Path -LiteralPath $rootDir
   $result.rsvarsFound     = Test-Path -LiteralPath $result.rsvarsPath
+  $result.compilerFound   = Test-Path -LiteralPath (Join-Path $compilerBinPath $compilerExe)
   $result.envOptionsFound = Test-Path -LiteralPath $envOptPath
 
   if ($result.envOptionsFound) {
     $result.envOptionsHasLibraryPath = Test-EnvOptionsLibraryPath -Path $envOptPath -Platform $Platform
   }
 
-  if ($result.rootDirExists -and $result.rsvarsFound -and $result.envOptionsFound -and $result.envOptionsHasLibraryPath) {
+  if ($result.rootDirExists -and $result.rsvarsFound -and $result.compilerFound -and $result.envOptionsFound -and $result.envOptionsHasLibraryPath) {
     $result.readiness = 'ready'
   } else {
     $result.readiness = 'partialInstall'
@@ -553,6 +575,7 @@ function Write-ListInstalledOutput {
           rsvarsPath               = $inst.rsvarsPath
           rootDirExists            = $inst.rootDirExists
           rsvarsFound              = $inst.rsvarsFound
+          compilerFound            = $inst.compilerFound
           envOptionsFound          = $inst.envOptionsFound
           envOptionsHasLibraryPath = $inst.envOptionsHasLibraryPath
         }
@@ -595,10 +618,12 @@ function Write-ListInstalledOutput {
       Write-Output ("  {0,-26}{1}" -f 'compilerFound', $compFoundStr)
       Write-Output ("  {0,-26}{1}" -f 'cfgFound', $cfgFoundStr)
     } else {
-      $rsvFoundStr   = if ($null -ne $inst.rsvarsFound)              { $inst.rsvarsFound.ToString().ToLower()              } else { 'null' }
+      $rsvFoundStr    = if ($null -ne $inst.rsvarsFound)              { $inst.rsvarsFound.ToString().ToLower()              } else { 'null' }
+      $compFoundStr   = if ($null -ne $inst.compilerFound)            { $inst.compilerFound.ToString().ToLower()            } else { 'null' }
       $envOptFoundStr = if ($null -ne $inst.envOptionsFound)          { $inst.envOptionsFound.ToString().ToLower()          } else { 'null' }
       $hasLibStr      = if ($null -ne $inst.envOptionsHasLibraryPath) { $inst.envOptionsHasLibraryPath.ToString().ToLower() } else { 'null' }
       Write-Output ("  {0,-26}{1}" -f 'rsvarsFound', $rsvFoundStr)
+      Write-Output ("  {0,-26}{1}" -f 'compilerFound', $compFoundStr)
       Write-Output ("  {0,-26}{1}" -f 'envOptionsFound', $envOptFoundStr)
       Write-Output ("  {0,-26}{1}" -f 'envOptionsHasLibraryPath', $hasLibStr)
     }
@@ -643,6 +668,7 @@ function Write-DetectLatestOutput {
           rsvarsPath               = $Installation.rsvarsPath
           rootDirExists            = $Installation.rootDirExists
           rsvarsFound              = $Installation.rsvarsFound
+          compilerFound            = $Installation.compilerFound
           envOptionsFound          = $Installation.envOptionsFound
           envOptionsHasLibraryPath = $Installation.envOptionsHasLibraryPath
         }
@@ -677,6 +703,8 @@ function Write-DetectLatestOutput {
   } else {
     Write-Output ("  {0,-26}{1}" -f 'rsvarsPath', $Installation.rsvarsPath)
     Write-Output ("  {0,-26}{1}" -f 'rsvarsFound', $Installation.rsvarsFound.ToString().ToLower())
+    $compFoundStr = if ($null -ne $Installation.compilerFound) { $Installation.compilerFound.ToString().ToLower() } else { 'null' }
+    Write-Output ("  {0,-26}{1}" -f 'compilerFound', $compFoundStr)
     Write-Output ("  {0,-26}{1}" -f 'envOptionsFound', $Installation.envOptionsFound.ToString().ToLower())
     $hasLibStr = if ($null -ne $Installation.envOptionsHasLibraryPath) { $Installation.envOptionsHasLibraryPath.ToString().ToLower() } else { 'null' }
     Write-Output ("  {0,-26}{1}" -f 'envOptionsHasLibraryPath', $hasLibStr)

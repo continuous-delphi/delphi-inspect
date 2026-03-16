@@ -256,7 +256,20 @@ systems or platforms, invoke the command multiple times.
 
 `-Platform` (mandatory)
 
-Valid values: `Win32`, `Win64`
+Valid values: 
+
+  - `Win32`
+  - `Win64`
+  - `macOS32`
+  - `macOS64`
+  - `macOSARM64`
+  - `Linux64`
+  - `iOS32`
+  - `iOSSimulator32`
+  - `iOS64`
+  - `iOSSimulator64`
+  - `Android32`
+  - `Android64`
 
 The target compilation platform to assess.
 
@@ -287,12 +300,6 @@ behavior, add `-Readiness all` to restore it.
 - `MSBuild` -- MSBuild-based builds driven by `.dproj` files.
   Requires `rsvars.bat` and a correctly populated `EnvOptions.proj`
   in the expected `%APPDATA%` path for the current user.
-
-### Platform support scope
-
-Only `Win32` and `Win64` are currently supported.  Support for other
-platforms (Linux64, macOS, Android, iOS) will be added in future
-releases based on demand.
 
 ### Detection mechanism
 
@@ -520,7 +527,20 @@ the full list.
 
 `-Platform` (optional, default: `Win32`)
 
-Valid values: `Win32`, `Win64`
+Valid values: 
+
+  - `Win32`
+  - `Win64`
+  - `macOS32`
+  - `macOS64`
+  - `macOSARM64`
+  - `Linux64`
+  - `iOS32`
+  - `iOSSimulator32`
+  - `iOS64`
+  - `iOSSimulator64`
+  - `Android32`
+  - `Android64`
 
 The target compilation platform to assess.
 
