@@ -611,10 +611,12 @@ function Write-ListInstalledOutput {
     $firstBlock = $false
 
     $regFoundStr    = if ($null -ne $inst.registryFound)  { $inst.registryFound.ToString().ToLower()  } else { 'null' }
+    $rootDirStr     = if ($null -ne $inst.rootDir)         { $inst.rootDir                              } else { 'null' }
     $rootExistsStr  = if ($null -ne $inst.rootDirExists)   { $inst.rootDirExists.ToString().ToLower()   } else { 'null' }
     Write-Output ("{0,-10} {1}" -f $inst.verDefine, $inst.productName)
     Write-Output ("  {0,-26}{1}" -f 'readiness', $inst.readiness)
     Write-Output ("  {0,-26}{1}" -f 'registryFound', $regFoundStr)
+    Write-Output ("  {0,-26}{1}" -f 'rootDir', $rootDirStr)
     Write-Output ("  {0,-26}{1}" -f 'rootDirExists', $rootExistsStr)
     if ($BuildSystem -eq 'DCC') {
       $compFoundStr = if ($null -ne $inst.compilerFound) { $inst.compilerFound.ToString().ToLower() } else { 'null' }
@@ -622,10 +624,12 @@ function Write-ListInstalledOutput {
       Write-Output ("  {0,-26}{1}" -f 'compilerFound', $compFoundStr)
       Write-Output ("  {0,-26}{1}" -f 'cfgFound', $cfgFoundStr)
     } else {
+      $rsvPathStr     = if ($null -ne $inst.rsvarsPath)               { $inst.rsvarsPath                                    } else { 'null' }
       $rsvFoundStr    = if ($null -ne $inst.rsvarsFound)              { $inst.rsvarsFound.ToString().ToLower()              } else { 'null' }
       $compFoundStr   = if ($null -ne $inst.compilerFound)            { $inst.compilerFound.ToString().ToLower()            } else { 'null' }
       $envOptFoundStr = if ($null -ne $inst.envOptionsFound)          { $inst.envOptionsFound.ToString().ToLower()          } else { 'null' }
       $hasLibStr      = if ($null -ne $inst.envOptionsHasLibraryPath) { $inst.envOptionsHasLibraryPath.ToString().ToLower() } else { 'null' }
+      Write-Output ("  {0,-26}{1}" -f 'rsvarsPath', $rsvPathStr)
       Write-Output ("  {0,-26}{1}" -f 'rsvarsFound', $rsvFoundStr)
       Write-Output ("  {0,-26}{1}" -f 'compilerFound', $compFoundStr)
       Write-Output ("  {0,-26}{1}" -f 'envOptionsFound', $envOptFoundStr)

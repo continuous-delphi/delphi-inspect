@@ -381,7 +381,7 @@ When `-BuildSystem MSBuild` is specified, the following are assessed:
 
 The expected `EnvOptions.proj` path is:
 
-    %APPDATA%\Roaming\Embarcadero\BDS\<bdsVersion>\EnvOptions.proj
+    %APPDATA%\Embarcadero\BDS\<bdsVersion>\EnvOptions.proj
 
 `ready` requires `rootDirExists`, `rsvarsFound`, `envOptionsFound`,
 and `envOptionsHasLibraryPath` to all be true.
@@ -426,6 +426,7 @@ Otherwise, one block per entry that passed the `-Readiness` filter:
     VER340     Delphi 10.4 Sydney
       readiness                 ready
       registryFound             true
+      rootDir                   C:\Program Files (x86)\Embarcadero\Studio\21.0\
       rootDirExists             true
       compilerFound             true
       cfgFound                  true
@@ -433,6 +434,7 @@ Otherwise, one block per entry that passed the `-Readiness` filter:
     VER350     Delphi 11 Alexandria
       readiness                 partialInstall
       registryFound             true
+      rootDir                   C:\Program Files (x86)\Embarcadero\Studio\22.0\
       rootDirExists             true
       compilerFound             true
       cfgFound                  false
@@ -472,6 +474,7 @@ that are `notApplicable` for the requested platform or build system.
             "productName": "Delphi 10.4 Sydney",
             "readiness": "ready",
             "registryFound": true,
+            "rootDir": "C:\\Program Files (x86)\\Embarcadero\\Studio\\21.0\\",
             "rootDirExists": true,
             "compilerFound": true,
             "cfgFound": true
@@ -481,6 +484,7 @@ that are `notApplicable` for the requested platform or build system.
             "productName": "Delphi 11 Alexandria",
             "readiness": "partialInstall",
             "registryFound": true,
+            "rootDir": "C:\\Program Files (x86)\\Embarcadero\\Studio\\22.0\\",
             "rootDirExists": true,
             "compilerFound": true,
             "cfgFound": false
@@ -490,6 +494,7 @@ that are `notApplicable` for the requested platform or build system.
             "productName": "Delphi 13 Florence",
             "readiness": "notFound",
             "registryFound": false,
+            "rootDir": null,
             "rootDirExists": null,
             "compilerFound": null,
             "cfgFound": null

@@ -30,7 +30,7 @@
     {
       "verDefine": "VER998",
       "compilerVersion": "98.0",
-      "productName": "Delphi Synthentic Both",
+      "productName": "Delphi Synthetic Both",
       "packageVersion": "980",
       "regKeyRelativePath": "\\Software\\Embarcadero\\BDS\\98.0",
       "supportedBuildSystems": ["DCC", "MSBuild"],

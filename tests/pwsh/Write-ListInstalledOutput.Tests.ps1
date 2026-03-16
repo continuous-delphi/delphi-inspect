@@ -188,6 +188,10 @@ Describe 'Write-ListInstalledOutput' {
       ($script:out -match 'registryFound\s+true') | Should -Not -BeNullOrEmpty
     }
 
+    It 'includes a rootDir line showing the path' {
+      ($script:out -match 'rootDir\s+C:\\Fake\\Delphi7') | Should -Not -BeNullOrEmpty
+    }
+
     It 'includes a rootDirExists line showing true' {
       ($script:out -match 'rootDirExists\s+true') | Should -Not -BeNullOrEmpty
     }
