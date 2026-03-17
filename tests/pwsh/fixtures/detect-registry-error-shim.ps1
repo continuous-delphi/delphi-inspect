@@ -26,7 +26,7 @@ $ErrorActionPreference = 'Stop'
 # The dot-source guard ($MyInvocation.InvocationName -eq '.') fires and returns
 # before the top-level try/catch, so only functions and variables defined above
 # the guard (including all $Exit* constants) are imported.
-$mainScript = Join-Path $PSScriptRoot '..' '..' '..' 'source' 'pwsh' 'delphi-inspect.ps1'
+$mainScript = Join-Path $PSScriptRoot '..' '..' '..' 'source' 'delphi-inspect.ps1'
 $mainScript = [System.IO.Path]::GetFullPath($mainScript)
 
 # Save the shim's parameter values before dot-sourcing.  When a script is dot-sourced

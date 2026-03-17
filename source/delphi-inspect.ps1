@@ -130,7 +130,7 @@ function Resolve-DefaultDataFilePath {
   # Prefer the submodule layout:
   #   ../delphi-compiler-versions/data/delphi-compiler-versions.json
   # Use Join-Path to remain path-separator-safe if invoked on non-Windows runners.
-  $repoRoot    = Split-Path (Split-Path $scriptDir -Parent) -Parent
+  $repoRoot    = Split-Path $scriptDir -Parent
   $specRoot = Join-Path (Join-Path $repoRoot 'submodules') 'delphi-compiler-versions'
   $dataDir     = Join-Path $specRoot 'data'
   $defaultPath = Join-Path $dataDir 'delphi-compiler-versions.json'
@@ -174,7 +174,7 @@ function Write-JsonError {
   Write-JsonOutput ([pscustomobject]@{
     ok      = $false
     command = $Command
-    tool    = [pscustomobject]@{ name = 'delphi-inspect'; impl = 'pwsh'; version = $ToolVersion }
+    tool    = [pscustomobject]@{ name = 'delphi-inspect'; version = $ToolVersion }
     error   = [pscustomobject]@{ code = $Code; message = $Message }
   } )
 }
@@ -208,7 +208,7 @@ function Write-VersionInfo {
     Write-JsonOutput ([pscustomobject]@{
       ok      = $true
       command = 'version'
-      tool    = [pscustomobject]@{ name = 'delphi-inspect'; impl = 'pwsh'; version = $ToolVersion }
+      tool    = [pscustomobject]@{ name = 'delphi-inspect'; version = $ToolVersion }
       result  = [pscustomobject]@{
         schemaVersion      = $schemaVersion
         dataVersion        = $dataVersion
@@ -278,7 +278,7 @@ function Write-ResolveOutput {
     Write-JsonOutput ([pscustomobject]@{
       ok      = $true
       command = 'resolve'
-      tool    = [pscustomobject]@{ name = 'delphi-inspect'; impl = 'pwsh'; version = $ToolVersion }
+      tool    = [pscustomobject]@{ name = 'delphi-inspect'; version = $ToolVersion }
       result  = [pscustomobject]@{
         verDefine          = $Entry.verDefine
         productName        = $Entry.productName
@@ -343,7 +343,7 @@ function Write-ListKnownOutput {
     Write-JsonOutput ([pscustomobject]@{
       ok      = $true
       command = 'listKnown'
-      tool    = [pscustomobject]@{ name = 'delphi-inspect'; impl = 'pwsh'; version = $ToolVersion }
+      tool    = [pscustomobject]@{ name = 'delphi-inspect'; version = $ToolVersion }
       result  = [pscustomobject]@{
         schemaVersion    = $Data.schemaVersion
         dataVersion      = $Data.dataVersion
@@ -588,7 +588,7 @@ function Write-ListInstalledOutput {
     Write-JsonOutput ([pscustomobject]@{
       ok      = $true
       command = 'listInstalled'
-      tool    = [pscustomobject]@{ name = 'delphi-inspect'; impl = 'pwsh'; version = $ToolVersion }
+      tool    = [pscustomobject]@{ name = 'delphi-inspect'; version = $ToolVersion }
       result  = [pscustomobject]@{
         platform      = $Platform
         buildSystem   = $BuildSystem
@@ -685,7 +685,7 @@ function Write-DetectLatestOutput {
     Write-JsonOutput ([pscustomobject]@{
       ok      = $true
       command = 'detectLatest'
-      tool    = [pscustomobject]@{ name = 'delphi-inspect'; impl = 'pwsh'; version = $ToolVersion }
+      tool    = [pscustomobject]@{ name = 'delphi-inspect'; version = $ToolVersion }
       result  = [pscustomobject]@{
         platform     = $Platform
         buildSystem  = $BuildSystem

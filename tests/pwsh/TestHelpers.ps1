@@ -35,7 +35,7 @@
 #   the loaded functions land in the correct scope for It blocks.
 
 function Get-ScriptUnderTestPath {
-  $path = Join-Path $PSScriptRoot '..' '..' 'source' 'pwsh' 'delphi-inspect.ps1'
+  $path = Join-Path $PSScriptRoot '..' '..' 'source' 'delphi-inspect.ps1'
   return [System.IO.Path]::GetFullPath($path)
 }
 

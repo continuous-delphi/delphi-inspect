@@ -5,28 +5,11 @@
 [![CI](https://github.com/continuous-delphi/delphi-inspect/actions/workflows/ci.yml/badge.svg)](https://github.com/continuous-delphi/delphi-inspect/actions/workflows/ci.yml)
 ![Status](https://img.shields.io/badge/status-incubator-orange)
 ![License](https://img.shields.io/github/license/continuous-delphi/delphi-inspect.svg)
-![Version](https://img.shields.io/badge/version-0.1.0-blue)
 ![Delphi](https://img.shields.io/badge/delphi-red)
 ![PowerShell](https://img.shields.io/badge/powershell-blue)
 ![Continuous Delphi](https://img.shields.io/badge/org-continuous--delphi-red)
 
 Deterministic Delphi toolchain discovery and normalization for Delphi systems.
-
-This repository provides two fully independent implementations that share a mission and a
-contract:
-
-- `source/delphi` -- Native Delphi Windows console executable
-- `source/pwsh` -- Multi-platform PowerShell 7.4+ implementation
-
-Neither implementation is primary. They serve overlapping but distinct audiences and are both
-first-class deliverables.
-
-## PowerShell Compatibility
-
-Runs on the widely available Windows PowerShell 5.1 (`powershell.exe`)
-and the newer PowerShell 7+ (`pwsh`).
-
-Note: the test suite requires `pwsh`.
 
 ## TLDR;
 
@@ -67,72 +50,14 @@ requiring you to change everything at once.
 
 The goal is _not_ to replace your workflow - the goal is to _incrementally enhance_ it.
 
-## Two Implementations, One Mission
+## PowerShell Compatibility
 
-### Delphi executable (`source/delphi`)
+Runs on the widely available Windows PowerShell 5.1 (`powershell.exe`)
+and the newer PowerShell 7+ (`pwsh`).
 
-**Audience:**
+Note: the test suite requires `pwsh`.
 
-- Security-conscious shops that will not use cloud CI
-- Teams maintaining legacy infrastructure
-- Air-gapped environments
-- Single-developer systems with tribal build knowledge
-- Organizations building their first repeatable build process
-
-**Operational requirements:**
-
-- Windows (Win32/Win64)
-- No PowerShell required
-- No Git required
-
-The Delphi executable embeds the dataset as a compiled resource and requires no external
-files for basic operation. It is a true single-file xcopy deployment.
-
-Dataset resolution priority:
-
-1. `-DataFile <path>` if specified on the command line
-2. `delphi-compiler-versions.json` found alongside the executable
-3. Embedded resource compiled into the executable
-
-This means the executable works out of the box, but can be updated to a newer dataset
-by placing the JSON file alongside it without recompiling. All output indicates which
-data source was used via the `datasetSource` field.
-
-For many shops, this will be the only implementation used.
-
-### PowerShell implementation (`source/pwsh`)
-
-**Audience:**
-
-- Teams using modern CI (GitHub Actions, GitLab CI, Jenkins, etc.)
-- Shops comfortable with scripting
-- Hybrid environments combining scripting and native builds
-
-**Operational requirements:**
-
-- PowerShell 7.4+
-- Windows for registry-based detection commands (RAD Studio currently only installs on Windows)
-
-Dataset resolution priority (if `-DataFile` is not specified):
-
-1. `-DataFile <path>` if specified on the command line
-2. `delphi-compiler-versions.json` found alongside the script
-3. Embedded `here-string` compiled into the script by the generator
-
-**Development and test requirements:**
-
-- PowerShell 7.4+
-- Pester 5.7+
-- CI pins Pester to a specific patch version for reproducibility
-
-## Shared Contract
-
-- Both implementations provide equivalent behavior and identical exit codes for shared commands
-- Human-readable text output may differ between implementations
-- Machine-readable JSON output will remain _semantically equivalent_ across both implementations
-  regardless of formatting or whitespace.
-
-### Shared commands
+## Commands
 
 | Command           | Description                                      |
 |-------------------|--------------------------------------------------|
@@ -141,10 +66,6 @@ Dataset resolution priority (if `-DataFile` is not specified):
 | `ListInstalled`   | List all Delphi versions with readiness state    |
 | `DetectLatest`    | Return the single highest-versioned ready install |
 | `Resolve`         | Resolve an alias or VER### to a canonical entry  |
-
-Both implementations use single-dash PascalCase switches (`-Version`, `-ListKnown`).
-This is the recognized PowerShell standard and is adopted for both implementations to
-ensure identical parameter syntax.
 
 See [docs/commands.md](docs/commands.md) for full command reference including switches,
 output formats, exit codes, and any functionality differences between implementations.
@@ -159,21 +80,7 @@ output formats, exit codes, and any functionality differences between implementa
 - `json` -- machine envelope with `ok`/`command`/`tool`/`result` structure.
   Suitable for CI pipelines and non-PowerShell consumers.
 
-### -Readiness filter (-ListInstalled only)
-
-`-Readiness` controls which readiness states are included in `-ListInstalled`
-output.  Applies to all formats.  Default is `@('ready')`.
-
-Valid values: `ready`, `partialInstall`, `notFound`, `notApplicable`, `all`.
-
-The special value `all` bypasses filtering entirely and returns every entry.
-Use `-Readiness all` to restore the previous behavior of returning all entries
-regardless of state (prior releases always returned all entries for `-Format json`).
-
-### Machine output contract
-
-When JSON output is requested (`-Format json`), both implementations emit a stable JSON
-envelope.
+### Machine output
 
 Property names in `result` match the dataset field names exactly.
 
@@ -185,7 +92,6 @@ Success (`-Version`):
   "command": "version",
   "tool": {
     "name": "delphi-inspect",
-    "impl": "pwsh|delphi",
     "version": "X.Y.Z"
   },
   "result": {
@@ -204,7 +110,6 @@ Success (`-Resolve`):
   "command": "resolve",
   "tool": {
     "name": "delphi-inspect",
-    "impl": "pwsh|delphi",
     "version": "X.Y.Z"
   },
   "result": {
@@ -229,7 +134,6 @@ Error:
   "command": "version",
   "tool": {
     "name": "delphi-inspect",
-    "impl": "pwsh|delphi",
     "version": "X.Y.Z"
   },
   "error": {
@@ -241,31 +145,28 @@ Error:
 
 ## Dataset
 
-Both implementations consume the canonical dataset from
+The implementations consumes the canonical dataset from
 [delphi-compiler-versions](https://github.com/continuous-delphi/delphi-compiler-versions).
-The JSON dataset is the single source of truth. Version tables should not be duplicated in code.
-During development, the dataset is referenced as a Git submodule.
+The JSON dataset is the single source of truth.
+
+_todo_
 
 The `gen/` folder produces a standalone `pwsh` script with the dataset embedded as a
-PowerShell `here-string`. (The Delphi executable references the dataset directly as a project
-resource.)
+PowerShell `here-string`.
 
-Both standalone artifacts support the same three-tier dataset resolution priority. Placing
-a newer `delphi-compiler-versions.json` alongside either artifact will take precedence over
+Artifacts support the same three-tier dataset resolution priority. A newer
+`delphi-compiler-versions.json` file found will take precedence over
 the embedded data without regenerating or recompiling.
 
 
 ## Maturity
 
-This repository is currently `incubator`. Both implementations are under active development.
-It will graduate to `stable` once:
+This repository is currently `incubator`. It will graduate to `stable` once:
 
-- The shared command contract is considered frozen.
-- Both implementations pass the shared contract test suite.
-- CI is in place for the PowerShell implementation.
+- The command contract is considered frozen.
 - At least one downstream consumer exists.
 
-Until graduation, breaking changes may occur in both implementations.
+Until graduation, breaking changes may occur.
 
 ![continuous-delphi logo](https://continuous-delphi.github.io/assets/logos/continuous-delphi-480x270.png)
 

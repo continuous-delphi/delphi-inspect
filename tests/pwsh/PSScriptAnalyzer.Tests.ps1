@@ -2,7 +2,7 @@
 #Requires -Modules @{ ModuleName='PSScriptAnalyzer'; ModuleVersion='1.21.0' }
 <#
 .SYNOPSIS
-  PSScriptAnalyzer lint test for source/pwsh/delphi-inspect.ps1
+  PSScriptAnalyzer lint test for source/delphi-inspect.ps1
 
 .DESCRIPTION
   Runs Invoke-ScriptAnalyzer against delphi-inspect.ps1 using the default

@@ -48,10 +48,6 @@ Describe 'Write-JsonError' {
       $script:json.tool.name | Should -Be 'delphi-inspect'
     }
 
-    It 'tool.impl is pwsh' {
-      $script:json.tool.impl | Should -Be 'pwsh'
-    }
-
     It 'tool.version is 0.1.0' {
       $script:json.tool.version | Should -Be '0.1.0'
     }

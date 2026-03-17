@@ -32,11 +32,11 @@ Describe 'Resolve-DefaultDataFilePath' {
     . $script:scriptUnderTest
   }
 
-  Context 'Given a script path in a standard source/pwsh layout' {
+  Context 'Given a script path in a standard source layout' {
 
     BeforeAll {
       $fakeRepo              = Join-Path ([System.IO.Path]::GetTempPath()) 'delphi-inspect-test-repo'
-      $fakeScriptDir         = Join-Path $fakeRepo 'source' 'pwsh'
+      $fakeScriptDir         = Join-Path $fakeRepo 'source'
       $script:fakeScriptPath = Join-Path $fakeScriptDir 'delphi-inspect.ps1'
       # Create a placeholder file so the guard's Test-Path check passes.
       $null = New-Item -ItemType Directory -Path $fakeScriptDir -Force

@@ -23,7 +23,7 @@ By default, invoking the script with **no switches** performs the
 
 # Usage
 
-    pwsh ./source/pwsh/delphi-inspect.ps1 [action] [options]
+    pwsh ./source/delphi-inspect.ps1 [action] [options]
 
 ------------------------------------------------------------------------
 
@@ -289,10 +289,6 @@ bypasses filtering entirely and returns every entry regardless of state.
 
 Default is `@('ready')`, meaning only fully ready installations are
 returned.  Exit code 6 fires when the filtered list is empty.
-
-**Behavior change vs prior releases:** Previous releases always returned
-all entries in JSON format regardless of state.  If you relied on that
-behavior, add `-Readiness all` to restore it.
 
 - `DCC` -- direct invocation of the command-line compiler
   (`dcc32.exe` or `dcc64.exe` depending on platform).  Requires the
