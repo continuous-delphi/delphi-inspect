@@ -7,6 +7,10 @@ will be documented in this file.
 
 ## [0.5.0] Unreleased
 
+- Ensure `PowerShell 5.1` compatibility for the delphi-inspect.ps1 script
+  (Tests remain the newer `pwsh`)  
+  [#23](https://github.com/continuous-delphi/delphi-inspect/issues/23)
+
 - PSScriptAnalyzer added to tests for linting PowerShell scripting
   
 - Expanded platforms to support full list:
