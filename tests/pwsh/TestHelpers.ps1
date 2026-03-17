@@ -12,6 +12,8 @@
 #   Get-RegistryErrorShimPath  - returns absolute path to detect-registry-error-shim.ps1
 #   Invoke-ToolProcess         - runs delphi-inspect.ps1 as a child process and
 #                                returns [pscustomobject]@{ ExitCode; StdOut; StdErr }
+#                                Optional -Shell parameter selects the host
+#                                executable (default: 'pwsh').
 #
 # PESTER 5 SCOPING NOTE:
 #   Pester 5 isolates the run phase from the discovery phase entirely.
@@ -60,12 +62,18 @@ function Get-RegistryErrorShimPath {
 function Invoke-ToolProcess {
   param(
     [Parameter(Mandatory=$true)][string]$ScriptPath,
-    [Parameter()][string[]]$Arguments = @()
+    [Parameter()][string[]]$Arguments = @(),
+    [Parameter()][string]$Shell = 'pwsh',
+    [Parameter()][string]$ExecutionPolicy = ''
   )
 
+  $shellArgs = @('-NoProfile', '-NonInteractive')
+  if ($ExecutionPolicy) { $shellArgs += @('-ExecutionPolicy', $ExecutionPolicy) }
+  $shellArgs += @('-File', $ScriptPath)
+
   $psi = [System.Diagnostics.ProcessStartInfo]::new()
-  $psi.FileName = 'pwsh'
-  foreach ($a in @('-NoProfile', '-NonInteractive', '-File', $ScriptPath) + $Arguments) {
+  $psi.FileName = $Shell
+  foreach ($a in $shellArgs + $Arguments) {
     [void]$psi.ArgumentList.Add($a)
   }
   $psi.RedirectStandardOutput = $true

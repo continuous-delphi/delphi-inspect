@@ -2,12 +2,12 @@
 
 ![delphi-inspect logo](https://continuous-delphi.github.io/assets/logos/delphi-inspect-480x270.png)
 
+[![CI](https://github.com/continuous-delphi/delphi-inspect/actions/workflows/ci.yml/badge.svg)](https://github.com/continuous-delphi/delphi-inspect/actions/workflows/ci.yml)
 ![Status](https://img.shields.io/badge/status-incubator-orange)
 ![License](https://img.shields.io/github/license/continuous-delphi/delphi-inspect.svg)
 ![Version](https://img.shields.io/badge/version-0.1.0-blue)
 ![Delphi](https://img.shields.io/badge/delphi-red)
-![PowerShell](https://img.shields.io/badge/powershell-7.4%2B-blue)
-![Pester](https://img.shields.io/badge/pester-5.7%2B-blue)
+![PowerShell](https://img.shields.io/badge/powershell-blue)
 ![Continuous Delphi](https://img.shields.io/badge/org-continuous--delphi-red)
 
 Deterministic Delphi toolchain discovery and normalization for Delphi systems.
@@ -21,6 +21,12 @@ contract:
 Neither implementation is primary. They serve overlapping but distinct audiences and are both
 first-class deliverables.
 
+## PowerShell Compatibility
+
+Runs on the widely available Windows PowerShell 5.1 (`powershell.exe`)
+and the newer PowerShell 7+ (`pwsh`).
+
+Note: the test suite requires `pwsh`.
 
 ## TLDR;
 
