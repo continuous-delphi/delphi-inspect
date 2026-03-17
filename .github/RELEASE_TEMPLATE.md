@@ -5,6 +5,8 @@
 
 **Tag:** `vX.Y.Z`
 
+**Direct download:** [delphi-inspect.ps1](https://github.com/continuous-delphi/delphi-inspect/releases/download/vX.Y.Z/delphi-inspect.ps1)
+
 This release improves `delphi-inspect`, a Continuous Delphi utility
 that scans for installed Delphi compilers/toolchains and outputs
 standardized, reliable metadata for use in CI environments, build
