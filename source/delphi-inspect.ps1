@@ -108,8 +108,8 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
-# Tool version (bump per Continuous Delphi versioning policy for tooling)
-$ToolVersion = '0.1.0'
+# Tool version
+$ToolVersion = '0.5.0'
 
 # Exit code constants -- single source of truth for the exit code contract.
 $ExitSuccess              = 0   # normal completion

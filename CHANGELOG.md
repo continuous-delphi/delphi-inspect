@@ -5,7 +5,7 @@ will be documented in this file.
 
 ---
 
-## [0.5.0] Unreleased
+## [0.5.0] 2026-03-17
 
 - Add new `Locate` command
   [#25](https://github.com/continuous-delphi/delphi-inspect/issues/25)
