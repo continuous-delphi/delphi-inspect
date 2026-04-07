@@ -5,9 +5,15 @@ will be documented in this file.
 
 ---
 
+## [1.1.0] - 2026-04-07
+
+- Updated delphi-compiler-versions with license info in header
+  [#34](https://github.com/continuous-delphi/delphi-inspect/issues/34)
+
 ## [1.0.0] - 2026-03-22
 
 - Updated delphi-compiler-versions to 1.4.0 for Delphi 13.1 `WinARM64EC` support
+  [#33](https://github.com/continuous-delphi/delphi-inspect/issues/33)
 
 
 ## [0.6.0] - 2026-03-17
