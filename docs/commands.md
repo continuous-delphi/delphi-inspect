@@ -345,6 +345,7 @@ Valid values:
 
   - `Win32`
   - `Win64`
+  - `WinARM64EC`
   - `macOS32`
   - `macOS64`
   - `macOSARM64`

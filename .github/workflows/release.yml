@@ -37,6 +37,11 @@ jobs:
           pwsh -Command "Install-Module Pester -MinimumVersion 5.7.0 -Force -Scope CurrentUser"
           pwsh -Command "Install-Module PSScriptAnalyzer -Force -Scope CurrentUser"
 
+      - name: Embed dataset into script
+        shell: pwsh
+        run: |
+          pwsh tools/update-delphi-compiler-versions-json.ps1
+
       - name: Run tests
         shell: pwsh
         env:
@@ -71,11 +76,6 @@ jobs:
             .github/RELEASE_TEMPLATE.md > release-notes.md
 
           printf '\n---\n\n# Change Log\n\n%s\n' "${CHANGELOG_SECTION}" >> release-notes.md
-
-      - name: Embed dataset into script
-        shell: pwsh
-        run: |
-          pwsh tools/update-delphi-compiler-versions-json.ps1
 
       - name: Create GitHub release
         env:

@@ -98,7 +98,7 @@ param(
 
   [Parameter(ParameterSetName='ListInstalled', Mandatory=$true)]
   [Parameter(ParameterSetName='DetectLatest')]
-  [ValidateSet('Win32', 'Win64', 'macOS32', 'macOS64', 'macOSARM64', 'Linux64', 'iOS32', 'iOSSimulator32', 'iOS64', 'iOSSimulator64', 'Android32', 'Android64')]
+  [ValidateSet('Win32', 'Win64', 'WinARM64EC ', 'macOS32', 'macOS64', 'macOSARM64', 'Linux64', 'iOS32', 'iOSSimulator32', 'iOS64', 'iOSSimulator64', 'Android32', 'Android64')]
   [string]$Platform = 'Win32',
 
   [Parameter(ParameterSetName='ListInstalled', Mandatory=$true)]

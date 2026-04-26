@@ -153,18 +153,9 @@ Error:
 
 ## Dataset
 
-The implementations consumes the canonical dataset from
+The implementation consumes the canonical dataset from
 [delphi-compiler-versions](https://github.com/continuous-delphi/delphi-compiler-versions).
 The JSON dataset is the single source of truth.
-
-_todo_
-
-The `gen/` folder produces a standalone `pwsh` script with the dataset embedded as a
-PowerShell `here-string`.
-
-Artifacts support the same three-tier dataset resolution priority. A newer
-`delphi-compiler-versions.json` file found will take precedence over
-the embedded data without regenerating or recompiling.
 
 ------------------------------------------------------------------------
 
