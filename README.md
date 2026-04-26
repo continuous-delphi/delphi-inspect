@@ -151,12 +151,6 @@ Error:
 }
 ```
 
-## Dataset
-
-The implementation consumes the canonical dataset from
-[delphi-compiler-versions](https://github.com/continuous-delphi/delphi-compiler-versions).
-The JSON dataset is the single source of truth.
-
 ------------------------------------------------------------------------
 
 ![continuous-delphi logo](https://continuous-delphi.github.io/assets/logos/continuous-delphi-480x270.png)
@@ -166,3 +160,21 @@ The JSON dataset is the single source of truth.
 This tool is part of the [Continuous-Delphi](https://github.com/continuous-delphi)
 ecosystem, focused on improving engineering discipline for long-lived Delphi systems.
 
+## Related Continuous Delphi Tools
+
+`delphi-inspect` uses the canonical dataset from
+[delphi-compiler-versions](https://github.com/continuous-delphi/delphi-compiler-versions)
+to resolve Delphi aliases, list known compiler versions, inspect installed
+toolchains, and select a ready Delphi installation for a requested platform and
+build system.
+
+For MSBuild-based build automation, see
+[delphi-msbuild](https://github.com/continuous-delphi/delphi-msbuild). It can
+accept the `rootDir` discovered by `delphi-inspect`, making it straightforward to
+discover a Delphi installation and build a `.dproj` project in the same script or
+pipeline.
+
+Together, these projects form a data-driven workflow:
+`delphi-compiler-versions` defines the compiler/version facts,
+`delphi-inspect` discovers the installed toolchain, and `delphi-msbuild`
+performs the build.
