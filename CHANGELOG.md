@@ -4,9 +4,13 @@ All notable changes to this project after it's initial release
 will be documented in this file.
 
 ---
+## [1.3.0] - 2026-05-17
+- Update delphi-compiler-versions.json to 1.2.0 for $schema support
+[#37](https://github.com/continuous-delphi/delphi-inspect/issues/37)
+
 ## [1.2.1] - 2026-05-16
 - Code review/fix errant space with `ValidateSet('Win32', 'Win64', 'WinARM64EC ', 'macOS32'`
-[#36](https://github.com/continuous-delphi/delphi-inspect/issues/35)
+[#36](https://github.com/continuous-delphi/delphi-inspect/issues/36)
 
 ## [1.2.0] - 2026-05-14
 

@@ -122,7 +122,7 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
 # Tool version
-$ToolVersion = '1.2.1'
+$ToolVersion = '1.3.0'
 
 # Exit code constants -- single source of truth for the exit code contract.
 $ExitSuccess              = 0   # normal completion
@@ -244,8 +244,9 @@ $script:CompilerMap = @{
 # BEGIN-DELPHI-COMPILER-VERSIONS-JSON
 $EmbeddedData = @'
 {
-  "schemaVersion": "1.1.0",
-  "dataVersion": "1.1.0",
+  "$schema": "https://continuous-delphi.github.io/delphi-compiler-versions/schemas/1.2.0/delphi-compiler-versions.schema.json",
+  "schemaVersion": "1.2.0",
+  "dataVersion": "1.2.0",
   "meta": {
     "generatedUtcDate": "2026-03-21",
     "scope": {
