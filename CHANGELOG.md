@@ -4,6 +4,9 @@ All notable changes to this project after it's initial release
 will be documented in this file.
 
 ---
+## [1.4.0] - 2026-05-18
+- Reverted delphi-logger changes. Reconsidered - noise greater than value
+
 ## [1.3.0] - 2026-05-17
 - Update delphi-compiler-versions.json to 1.2.0 for $schema support
 [#37](https://github.com/continuous-delphi/delphi-inspect/issues/37)
