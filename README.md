@@ -14,37 +14,18 @@ Deterministic Delphi toolchain discovery and normalization for Delphi systems.
 ## TLDR;
 
 ```powershell
-# Object mode (default) -- returns PowerShell objects; pipe, filter, or assign directly
-$ver  = pwsh delphi-inspect.ps1 -Version
-$d7   = pwsh delphi-inspect.ps1 -Resolve D7
-$all  = pwsh delphi-inspect.ps1 -ListKnown
-$inst = pwsh delphi-inspect.ps1 -ListInstalled -Platform Win32 -BuildSystem DCC -Readiness all
-$best = pwsh delphi-inspect.ps1 -DetectLatest
+# Detect the best available Delphi install
+delphi-inspect.ps1 -DetectLatest
 
-# Example using MSBuild with Delphi 13 Florence
-# Use "Locate" to pin a Delphi version within your script so it can be run
-# on developer machines that may have custom RAD Studio installation paths
-# Locate with: VER370, Florence, Delphi 13, or 13 Florence...whichever is your preference
-./delphi-inspect.ps1 -Locate -Name Florence | ./delphi-msbuild.ps1 -ProjectFile 'MyProj.dproj' -Platform Win64
+# Detect latest Win64 MSBuild-capable install
+delphi-inspect.ps1 -DetectLatest -Platform Win64 -BuildSystem MSBuild
 
+# Resolve version aliases
+delphi-inspect.ps1 -Resolve Florence
 
-# Text format -- human-readable output
-pwsh delphi-inspect.ps1
-pwsh delphi-inspect.ps1 -Version -Format text
-pwsh delphi-inspect.ps1 -Resolve D7 -Format text
-pwsh delphi-inspect.ps1 -Resolve -Name D7 -Format text
-pwsh delphi-inspect.ps1 -Resolve "Delphi 11" -Format text
-pwsh delphi-inspect.ps1 -ListKnown -Format text
-pwsh delphi-inspect.ps1 -ListInstalled -Platform Win32 -BuildSystem DCC -Format text
-pwsh delphi-inspect.ps1 -ListInstalled -Platform Win32 -BuildSystem DCC -Readiness all -Format text
-pwsh delphi-inspect.ps1 -DetectLatest -Format text
-pwsh delphi-inspect.ps1 -DetectLatest -Platform Win64 -BuildSystem DCC -Format text
-
-# JSON format -- machine envelope for CI pipelines
-pwsh delphi-inspect.ps1 -Resolve D7 -Format json
-pwsh delphi-inspect.ps1 -ListKnown -Format json
-pwsh delphi-inspect.ps1 -ListInstalled -Platform Win32 -BuildSystem MSBuild -Readiness all -Format json
-pwsh delphi-inspect.ps1 -DetectLatest -Platform Win64 -BuildSystem DCC -Format json
+# Locate and build
+./delphi-inspect.ps1 -Locate -Name Florence |
+  ./delphi-msbuild.ps1 -ProjectFile 'MyProj.dproj' -Platform Win64
 ```
 
 ---
