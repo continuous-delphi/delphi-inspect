@@ -47,6 +47,16 @@ pwsh delphi-inspect.ps1 -ListInstalled -Platform Win32 -BuildSystem MSBuild -Rea
 pwsh delphi-inspect.ps1 -DetectLatest -Platform Win64 -BuildSystem DCC -Format json
 ```
 
+---
+
+<p align="center">
+<img
+  src="https://continuous-delphi.github.io/assets/heroes/repos/delphi-inspect-hero.png"
+  alt="delphi-inspect hero image"
+  width="800">
+</p>
+
+
 ## Philosophy
 
 `Continuous Delphi` meets Delphi developers where they are.
